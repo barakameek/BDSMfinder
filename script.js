@@ -958,13 +958,10 @@ class StyleFinderApp {
       dashboard: document.getElementById('dashboard'),
       themeToggle: document.getElementById('theme-toggle')
     };
-    // Debug: Check if elements are found
-    if (!this.elements.styleFinderBtn) console.error("Style Finder Button not found!");
   }
 
   addEventListeners() {
     this.elements.styleFinderBtn.addEventListener('click', () => {
-      console.log("Find Your Style button clicked!");
       this.styleFinderActive = true;
       this.styleFinderStep = 0;
       this.styleFinderRole = null;
@@ -1199,46 +1196,46 @@ class StyleFinderApp {
         `;
         break;
       case 'result':
-        this.calculateStyleFinderResult();
-        const topStyles = Object.entries(this.styleFinderScores).sort((a, b) => b[1] - a[1]).slice(0, 2);
-        const topStyle = topStyles[0][0];
-        const match = this.dynamicMatches[topStyle];
-        html += `
-          <div class="result-section">
-            <h2 class="result-heading">Your Style</h2>
-            <h3>You’re a ${topStyle}!</h3>
-            <p>${this.styleDescriptions[topStyle].short}
-              <span class="info-icon" onclick="styleFinderApp.showStyleInfo('${topStyle}')">ℹ️</span></p>
-            <p><strong>Score:</strong> ${topStyles[0][1].toFixed(1)}</p>
-            ${topStyles[1] ? `
-              <p><strong>Runner-Up:</strong> ${topStyles[1][0]} (${topStyles[1][1].toFixed(1)})
-                <span class="info-icon" onclick="styleFinderApp.showStyleInfo('${topStyles[1][0]}')">ℹ️</span></p>
-            ` : ''}
-          </div>
-          <div class="result-section">
-            <h2 class="result-heading">Style Tips</h2>
-            <ul style="list-style-type: none; padding-left: 0;">
-              ${this.styleDescriptions[topStyle].tips.map(tip => `<li>🌸 ${tip}</li>`).join('')}
-            </ul>
-          </div>
-          <div class="result-section">
-            <h2 class="result-heading">Your Dynamic Match</h2>
-            <p><em>${match.dynamic}</em>: ${match.desc}
-              <span class="info-icon" onclick="styleFinderApp.showDynamicInfo('${topStyle}', 'dynamic')">ℹ️</span></p>
-            <p><strong>Look for a:</strong> ${match.match} - They’d complement your vibe perfectly!
-              <span class="info-icon" onclick="styleFinderApp.showDynamicInfo('${topStyle}', 'match')">ℹ️</span></p>
-          </div>
-          <div class="result-buttons">
-            <button onclick="styleFinderApp.saveAsCertificate()">Save as Certificate</button>
-            <button onclick="styleFinderApp.shareResult()">Share with a Friend!</button>
-            <button onclick="styleFinderApp.restart()">Try Again!</button>
-            <button onclick="styleFinderApp.prevStyleFinderStep()" style="background: #ccc;">Back</button>
-          </div>
-        `;
-        setTimeout(() => {
-          confetti({ particleCount: 50, spread: 50, origin: { y: 0.6 } });
-        }, 500);
-        break;
+  this.calculateStyleFinderResult();
+  const topStyles = Object.entries(this.styleFinderScores).sort((a, b) => b[1] - a[1]).slice(0, 2);
+  const topStyle = topStyles[0][0];
+  const match = this.dynamicMatches[topStyle];
+  html += `
+    <div class="result-section">
+      <h2 class="result-heading">Your Style</h2>
+      <h3>You’re a ${topStyle}!</h3>
+      <p>${this.styleDescriptions[topStyle].short}
+        <span class="info-icon" onclick="styleFinderApp.showStyleInfo('${topStyle}')">Learn More!</span></p>
+      <p><strong>Score:</strong> ${topStyles[0][1].toFixed(1)}</p>
+        ${topStyles[1] ? `
+          <p><strong>Runner-Up:</strong> ${topStyles[1][0]} (${topStyles[1][1].toFixed(1)})
+            <span class="info-icon" onclick="styleFinderApp.showStyleInfo('${topStyles[1][0]}')">Learn More!</span></p>
+          ` : ''}
+    </div>
+    <div class="result-section">
+      <h2 class="result-heading">Style Tips</h2>
+      <ul style="list-style-type: none; padding-left: 0;">
+        ${this.styleDescriptions[topStyle].tips.map(tip => `<li>🌸 ${tip}</li>`).join('')}
+      </ul>
+    </div>
+    <div class="result-section">
+      <h2 class="result-heading">Your Dynamic Match</h2>
+      <p><em>${match.dynamic}</em>: ${match.desc}
+        <span class="info-icon" onclick="styleFinderApp.showDynamicInfo('${topStyle}', 'dynamic')">Learn More!</span></p>
+      <p><strong>Look for a:</strong> ${match.match} - They’d complement your vibe perfectly!
+        <span class="info-icon" onclick="styleFinderApp.showDynamicInfo('${topStyle}', 'match')">Learn More!</span></p>
+    </div>
+    <div class="result-buttons">
+      <button onclick="styleFinderApp.saveAsCertificate()">Save as Certificate</button>
+      <button onclick="styleFinderApp.shareResult()">Share with a Friend!</button>
+      <button onclick="styleFinderApp.restart()">Try Again!</button>
+      <button onclick="styleFinderApp.prevStyleFinderStep()" style="background: #ccc;">Back</button>
+    </div>
+  `;
+  setTimeout(() => {
+    confetti({ particleCount: 50, spread: 50, origin: { y: 0.6 } });
+  }, 500);
+  break;
     }
 
     this.elements.stepContent.innerHTML = html;
@@ -1261,7 +1258,7 @@ class StyleFinderApp {
 
   setStyleFinderRole(role) {
     this.styleFinderRole = role;
-    this.styleFinderAnswers.traits = {};
+    this.styleFinderAnswers.traits = {}; // Reset traits, no default values here
     this.styleFinderStep++;
     this.renderStyleFinder();
     this.showFeedback(role === 'submissive' ? "Supporter mode activated!" : "Leader mode engaged!");
@@ -1319,7 +1316,7 @@ class StyleFinderApp {
       'Babygirl': ['dependence', 'innocence', 'affection'],
       'Captive': ['submissionDepth', 'vulnerability', 'exploration'],
       'Thrall': ['devotion', 'submissionDepth', 'dependence'],
-            'Dominant': ['authority', 'confidence', 'leadership'],
+      'Dominant': ['authority', 'confidence', 'leadership'],
       'Assertive': ['boldness', 'intensity', 'authority'],
       'Nurturer': ['care', 'empathy', 'patience'],
       'Strict': ['discipline', 'control', 'precision'],
@@ -1341,49 +1338,58 @@ class StyleFinderApp {
       'Commander': ['authority', 'intensity', 'dominanceDepth']
     };
 
-    Object.keys(this.styleFinderAnswers.traits).forEach(trait => {
-      const rating = this.styleFinderAnswers.traits[trait] || 0;
-      roleStyles.forEach(style => {
-        const keyTraits = styleKeyTraits[style] || [];
-        if (keyTraits.includes(trait)) {
-          this.styleFinderScores[style] += rating * 1.5; // Boost key traits
-        } else {
-          this.styleFinderScores[style] += rating * 0.5; // Minor influence from other traits
-        }
+    this.styles[this.styleFinderRole].forEach(style => {
+      const keyTraits = styleKeyTraits[style] || [];
+      keyTraits.forEach(trait => {
+        const rating = this.styleFinderAnswers.traits[trait] || 0;
+        this.styleFinderScores[style] += rating * 1.5;
       });
     });
   }
 
-  showFeedback(message = null) {
-    if (!message) {
-      const messages = [
-        "You’re doing great!", "Keep it up, cutie!", "Nice choice!", "Ooh, fun pick!",
-        "You’re vibing!", "Love that energy!", "You’re a star!", "So exciting!"
-      ];
-      message = messages[Math.floor(Math.random() * messages.length)];
-    }
-    this.elements.feedback.textContent = message;
-    this.elements.feedback.classList.add('feedback-animation');
-    setTimeout(() => this.elements.feedback.classList.remove('feedback-animation'), 500);
+  showFeedback(message) {
+    if (!this.elements.feedback) return;
+    const funMessages = [
+      "You’re a sparkly unicorn! - ✨🦄",
+      "Vibing like a fluffy cloud! - 🌈☁️",
+      "Eeee, so adorable! - 🐾💕",
+      "Zooming with kitten power! - 🚀😽",
+      "Pawsitively precious! - 🐱🌸",
+      "Sparklies everywhere, yay! - ⚡️✨",
+      "Glowy lil’ star alert! - 🌟🐾",
+      "Firecracker cutie pie! - 🎆💖",
+      "Bouncing bunny vibes! - 🐰🌼",
+      "Sweet as candy, wow! - 🍬😻",
+      "Treasure chest of cute! - 💎💞",
+      "Twirly whirly adorbs! - 🌀✨",
+      "Purring perfection! - 😻🌈",
+      "Blooming like a flower! - 🌸💕",
+      "Tiny hero energy! - 💪🐾"
+    ];
+    this.elements.feedback.textContent = message || funMessages[Math.floor(Math.random() * funMessages.length)];
+    this.elements.feedback.classList.add("feedback-animation");
+    setTimeout(() => this.elements.feedback.classList.remove("feedback-animation"), 2000);
   }
 
   showTraitInfo(trait) {
+    const explanation = this.traitExplanations[trait] || "No detailed info available for this trait yet!";
     const popup = document.createElement('div');
     popup.className = 'style-info-popup';
     popup.innerHTML = `
-      <h3>About ${trait}</h3>
-      <p>${this.traitExplanations[trait]}</p>
+      <h3>About "${trait}"</h3>
+      <p>${explanation}</p>
       <button class="close-btn" onclick="this.parentElement.remove()">✖</button>
     `;
     document.body.appendChild(popup);
   }
 
   showStyleInfo(style) {
+    const desc = this.styleDescriptions[style];
     const popup = document.createElement('div');
     popup.className = 'style-info-popup';
     popup.innerHTML = `
       <h3>${style}</h3>
-      <p>${this.styleDescriptions[style].long}</p>
+      <p>${desc.long}</p>
       <button class="close-btn" onclick="this.parentElement.remove()">✖</button>
     `;
     document.body.appendChild(popup);
@@ -1391,145 +1397,136 @@ class StyleFinderApp {
 
   showDynamicInfo(style, type) {
     const match = this.dynamicMatches[style];
+    if (!match) {
+      alert("No dynamic match information available for this style.");
+      return;
+    }
+
     const popup = document.createElement('div');
     popup.className = 'style-info-popup';
+    let title, description;
+
+    if (type === 'dynamic') {
+      title = match.dynamic || "Dynamic";
+      description = match.longDesc || "Description not available.";
+    } else {
+      const matchStyle = match.match;
+      const matchDesc = this.styleDescriptions[matchStyle];
+      title = matchStyle || "Match Style";
+      description = matchDesc ? matchDesc.long : "Description not available.";
+    }
+
     popup.innerHTML = `
-      <h3>${type === 'dynamic' ? match.dynamic : match.match}</h3>
-      <p>${type === 'dynamic' ? match.longDesc : this.styleDescriptions[match.match].long}</p>
+      <h3>${title}</h3>
+      <p>${description}</p>
       <button class="close-btn" onclick="this.parentElement.remove()">✖</button>
     `;
     document.body.appendChild(popup);
   }
 
-  saveAsCertificate() {
-    const topStyles = Object.entries(this.styleFinderScores).sort((a, b) => b[1] - a[1]).slice(0, 1);
-    const topStyle = topStyles[0][0];
-    const match = this.dynamicMatches[topStyle];
+  /** Save result as a certificate text file */
+ saveAsCertificate() {
+  const topStyles = Object.entries(this.styleFinderScores).sort((a, b) => b[1] - a[1]).slice(0, 1);
+  const topStyle = topStyles[0][0];
+  const match = this.dynamicMatches[topStyle];
 
-    // Responsive canvas
-    const canvas = document.createElement('canvas');
-    const isMobile = window.innerWidth <= 768;
-    const baseWidth = isMobile ? Math.min(window.innerWidth - 40, 500) : 800;
-    const aspectRatio = 4 / 3;
-    canvas.width = baseWidth;
-    canvas.height = baseWidth / aspectRatio;
+  // Create a canvas element
+  const canvas = document.createElement('canvas');
+  canvas.width = 800; // Width in pixels
+  canvas.height = 600; // Height in pixels
+  const ctx = canvas.getContext('2d');
 
-    const ctx = canvas.getContext('2d');
-    const scaleFactor = baseWidth / 800;
-
-    // Gradient background
-    const isDarkTheme = document.body.getAttribute('data-theme') === 'dark';
-    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    if (isDarkTheme) {
-      gradient.addColorStop(0, '#3b233a');
-      gradient.addColorStop(1, '#2b1a2a');
-    } else {
-      gradient.addColorStop(0, '#fff0f5');
-      gradient.addColorStop(1, '#f8e1e9');
-    }
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Title
-    ctx.fillStyle = '#ff7096';
-    ctx.textAlign = 'center';
-    ctx.font = `bold ${40 * scaleFactor}px Georgia, serif`;
-    ctx.fillText('BDSM Style Finder Certificate', canvas.width / 2, 80 * scaleFactor);
-
-    // Decorative line
-    ctx.strokeStyle = '#ff7096';
-    ctx.lineWidth = 2 * scaleFactor;
-    ctx.beginPath();
-    ctx.moveTo(150 * scaleFactor, 100 * scaleFactor);
-    ctx.lineTo((canvas.width - 150) * scaleFactor, 100 * scaleFactor);
-    ctx.stroke();
-
-    // Main content
-    ctx.fillStyle = isDarkTheme ? '#f8e1e9' : '#3b233a';
-    ctx.font = `${24 * scaleFactor}px Georgia, serif`;
-    const lines = [
-      `Certified Style: ${topStyle}`,
-      `${this.styleDescriptions[topStyle].short}`,
-      ``,
-      `Dynamic Match: ${match.dynamic} with a ${match.match}`,
-      `${match.desc}`,
-      ``,
-      `Tips for Excellence:`,
-      ...this.styleDescriptions[topStyle].tips.map(tip => ` • ${tip}`),
-    ];
-
-    let y = 150 * scaleFactor;
-    lines.forEach(line => {
-      ctx.fillText(line, canvas.width / 2, y);
-      y += 35 * scaleFactor;
-    });
-
-    // Signature line
-    ctx.font = `${20 * scaleFactor}px Georgia, serif`;
-    ctx.fillText('Certified by Style Finder', canvas.width / 2, canvas.height - 80 * scaleFactor);
-    ctx.beginPath();
-    ctx.moveTo(300 * scaleFactor, canvas.height - 60 * scaleFactor);
-    ctx.lineTo(500 * scaleFactor, canvas.height - 60 * scaleFactor);
-    ctx.stroke();
-
-    // Border
-    ctx.strokeStyle = '#ff7096';
-    ctx.lineWidth = 4 * scaleFactor;
-    ctx.strokeRect(30 * scaleFactor, 30 * scaleFactor, canvas.width - 60 * scaleFactor, canvas.height - 60 * scaleFactor);
-
-    // Corner accents
-    ctx.fillStyle = '#ff7096';
-    ctx.font = `${20 * scaleFactor}px Arial`;
-    ctx.fillText('✨', 50 * scaleFactor, 50 * scaleFactor);
-    ctx.fillText('✨', canvas.width - 50 * scaleFactor, 50 * scaleFactor);
-    ctx.fillText('✨', 50 * scaleFactor, canvas.height - 40 * scaleFactor);
-    ctx.fillText('✨', canvas.width - 50 * scaleFactor, canvas.height - 40 * scaleFactor);
-
-    // Download with mobile support
-    canvas.toBlob(blob => {
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'BDSM_Style_Certificate.png';
-      link.click();
-
-      // Fallback for iOS
-      setTimeout(() => {
-        if (document.body.contains(link)) {
-          const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-          if (isIOS) {
-            const img = document.createElement('img');
-            img.src = url;
-            img.style.maxWidth = '100%';
-            const popup = document.createElement('div');
-            popup.className = 'style-info-popup';
-            popup.innerHTML = `
-              <h3>Your Certificate</h3>
-              <p>Tap and hold the image below, then select "Save Image" to keep your certificate!</p>
-            `;
-            popup.appendChild(img);
-            popup.innerHTML += `<button class="close-btn" onclick="this.parentElement.remove()">✖</button>`;
-            document.body.appendChild(popup);
-          }
-        }
-        window.URL.revokeObjectURL(url);
-      }, 1000);
-    }, 'image/png');
+  // Gradient background (professional yet soft)
+  const isDarkTheme = document.body.getAttribute('data-theme') === 'dark';
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  if (isDarkTheme) {
+    gradient.addColorStop(0, '#3b233a'); // Darker purple
+    gradient.addColorStop(1, '#2b1a2a'); // Dark purple
+  } else {
+    gradient.addColorStop(0, '#fff0f5'); // Light pink
+    gradient.addColorStop(1, '#f8e1e9'); // Softer pink
   }
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Font and color settings
+  ctx.fillStyle = isDarkTheme ? '#f8e1e9' : '#3b233a'; // Text color
+  ctx.textAlign = 'center';
+
+  // Title
+  ctx.font = 'bold 40px Georgia, serif'; // Professional serif font
+  ctx.fillStyle = '#ff7096'; // Pink title
+  ctx.fillText('BDSM Style Finder Certificate', canvas.width / 2, 80);
+
+  // Subtle decorative line under title
+  ctx.strokeStyle = '#ff7096';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(150, 100);
+  ctx.lineTo(650, 100);
+  ctx.stroke();
+
+  // Main content
+  ctx.fillStyle = isDarkTheme ? '#f8e1e9' : '#3b233a';
+  ctx.font = '24px Georgia, serif'; // Slightly larger, professional font
+  const lines = [
+    `Certified Style: ${topStyle}`,
+    `${this.styleDescriptions[topStyle].short}`,
+    ``,
+    `Dynamic Match: ${match.dynamic} with a ${match.match}`,
+    `${match.desc}`,
+    ``,
+    `Tips for Excellence:`,
+    ...this.styleDescriptions[topStyle].tips.map(tip => ` • ${tip}`),
+  ];
+
+  let y = 150;
+  lines.forEach(line => {
+    ctx.fillText(line, canvas.width / 2, y);
+    y += 35; // Increased line spacing for readability
+  });
+
+  // Signature line
+  ctx.font = '20px Georgia, serif';
+  ctx.fillText('Certified by Style Finder', canvas.width / 2, canvas.height - 80);
+  ctx.beginPath();
+  ctx.moveTo(300, canvas.height - 60);
+  ctx.lineTo(500, canvas.height - 60);
+  ctx.stroke();
+
+  // Professional border
+  ctx.strokeStyle = '#ff7096';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60);
+
+  // Corner accents (subtle decoration)
+  ctx.fillStyle = '#ff7096';
+  ctx.font = '20px Arial';
+  ctx.fillText('✨', 50, 50);
+  ctx.fillText('✨', canvas.width - 50, 50);
+  ctx.fillText('✨', 50, canvas.height - 40);
+  ctx.fillText('✨', canvas.width - 50, canvas.height - 40);
+
+  // Convert canvas to PNG and trigger download
+  const link = document.createElement('a');
+  link.href = canvas.toDataURL('image/png');
+  link.download = 'BDSM_Style_Certificate.png';
+  link.click();
+}
+
 
   shareResult() {
     const topStyles = Object.entries(this.styleFinderScores).sort((a, b) => b[1] - a[1]).slice(0, 1);
     const topStyle = topStyles[0][0];
-    const match = this.dynamicMatches[topStyle];
-    const text = `I’m a ${topStyle} in the BDSM Style Finder! ${this.styleDescriptions[topStyle].short} My match? A ${match.match}! Find yours: [insert your URL here]`;
+    const text = `I’m a ${topStyle} according to the BDSM Style Finder! Check it out: [Your App URL]`;
     if (navigator.share) {
       navigator.share({
-        title: 'My BDSM Style Finder Result',
+        title: 'My BDSM Style Result',
         text: text,
         url: window.location.href
       }).catch(err => console.log('Share failed:', err));
     } else {
-      prompt("Copy this to share your result!", text);
+      alert("Sharing isn’t supported here, but here’s your result: " + text);
     }
   }
 
@@ -1540,12 +1537,9 @@ class StyleFinderApp {
     this.styleFinderAnswers = { traits: {} };
     this.styleFinderScores = {};
     this.hasRenderedDashboard = false;
-    this.previousScores = null;
     this.renderStyleFinder();
-    this.showFeedback("Fresh start, new vibes!");
+    this.showFeedback("Fresh start, yay!");
   }
 }
 
-// Initialize the app
 const styleFinderApp = new StyleFinderApp();
-console.log("Script loaded!");
