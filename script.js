@@ -12,7 +12,8 @@ class StyleFinderApp {
     this.styles = {
       submissive: [
         'Submissive', 'Brat', 'Slave', 'Switch', 'Pet', 'Little', 'Puppy', 'Kitten', 'Princess', 'Rope Bunny',
-        'Masochist', 'Prey', 'Toy', 'Doll', 'Bunny', 'Servant', 'Playmate', 'Babygirl', 'Captive', 'Thrall'
+        'Masochist', 'Prey', 'Toy', 'Doll', 'Bunny', 'Servant', 'Playmate', 'Babygirl', 'Captive', 'Thrall',
+        'Puppet', 'Maid', 'Painslut', 'Bottom'
       ],
       dominant: [
         'Dominant', 'Assertive', 'Nurturer', 'Strict', 'Master', 'Mistress', 'Daddy', 'Mommy', 'Owner', 'Rigger',
@@ -22,21 +23,25 @@ class StyleFinderApp {
 
     // Submissive traits (randomized order)
     this.subFinderTraits = [
-      { name: 'obedience', desc: 'Do you find peace in following orders?' },
-      { name: 'rebellion', desc: 'Do you enjoy teasing or resisting just a little?' },
-      { name: 'service', desc: 'Does helping others feel rewarding to you?' },
-      { name: 'playfulness', desc: 'Do you love silly games or lighthearted fun?' },
-      { name: 'sensuality', desc: 'Does touch or texture excite your senses?' },
-      { name: 'exploration', desc: 'Are you eager to try new experiences?' },
-      { name: 'devotion', desc: 'Do you feel fulfilled by deep loyalty?' },
-      { name: 'innocence', desc: 'Do you enjoy feeling carefree or childlike?' },
-      { name: 'mischief', desc: 'Do you like stirring up a bit of trouble?' },
-      { name: 'affection', desc: 'Do you crave closeness and cuddles?' },
-      { name: 'painTolerance', desc: 'Do you enjoy a sting or ache for fun?' },
-      { name: 'submissionDepth', desc: 'Do you love giving up control completely?' },
-      { name: 'dependence', desc: 'Do you feel safe relying on someone else?' },
-      { name: 'vulnerability', desc: 'Does being open and exposed feel right?' },
-      { name: 'adaptability', desc: 'Do you switch easily between roles?' }
+      { name: 'obedience', desc: 'How much do you enjoy following instructions or rules given by someone you trust?' },
+      { name: 'rebellion', desc: 'Do you find it fun to playfully resist or tease when someone tries to guide you?' },
+      { name: 'service', desc: 'Does it feel rewarding to assist or do tasks that make someone else happy?' },
+      { name: 'playfulness', desc: 'How much do you love engaging in silly games or lighthearted mischief?' },
+      { name: 'sensuality', desc: 'Do soft touches, textures, or physical sensations light up your senses?' },
+      { name: 'exploration', desc: 'Are you excited by the idea of trying new experiences or stepping into the unknown?' },
+      { name: 'devotion', desc: 'Does being deeply loyal and committed to someone bring you a sense of fulfillment?' },
+      { name: 'innocence', desc: 'Do you enjoy feeling carefree, pure, or even a bit childlike in your interactions?' },
+      { name: 'mischief', desc: 'How much do you like stirring things up with a cheeky prank or playful trouble?' },
+      { name: 'affection', desc: 'Do you crave physical closeness, like hugs or cuddles, to feel connected?' },
+      { name: 'painTolerance', desc: 'Does a little sting or discomfort excite you, or do you prefer to avoid it?' },
+      { name: 'submissionDepth', desc: 'How much do you enjoy letting go completely and giving someone full control?' },
+      { name: 'dependence', desc: 'Do you feel comforted and secure when you can rely on someone else to guide you?' },
+      { name: 'vulnerability', desc: 'Does opening up emotionally and being exposed feel natural and right to you?' },
+      { name: 'adaptability', desc: 'How easily can you switch between different roles or adjust to new expectations?' },
+      { name: 'tidiness', desc: 'Do you take pride in keeping things neat, clean, and perfectly organized for someone?' },
+      { name: 'politeness', desc: 'Does being courteous and respectful in your actions come naturally to you?' },
+      { name: 'craving', desc: 'Do you actively seek out intense sensations or experiences that push your limits?' },
+      { name: 'receptiveness', desc: 'How open are you to receiving direction, sensations, or guidance from someone else?' }
     ].sort(() => 0.5 - Math.random());
 
     // Submissive trait footnotes
@@ -55,7 +60,11 @@ class StyleFinderApp {
       submissionDepth: "1: Light submission / 10: Total surrender",
       dependence: "1: Self-reliant / 10: Loves guidance",
       vulnerability: "1: Guarded / 10: Fully open",
-      adaptability: "1: Fixed role / 10: Very versatile"
+      adaptability: "1: Fixed role / 10: Very versatile",
+      tidiness: "1: Messy and carefree / 10: Obsessed with order",
+      politeness: "1: Casual and blunt / 10: Always courteous",
+      craving: "1: Avoids intensity / 10: Seeks extreme thrills",
+      receptiveness: "1: Closed off / 10: Fully open to input"
     };
 
     // Dominant traits (randomized order)
@@ -278,6 +287,54 @@ class StyleFinderApp {
         "You flip like a pro!",
         "Total chameleon!"
       ],
+      tidiness: [
+        "Chaos is your friend!",
+        "A little mess is fine!",
+        "You tidy if asked nicely!",
+        "Order’s okay sometimes!",
+        "You like things neat-ish!",
+        "Cleanliness feels good!",
+        "You love a tidy space!",
+        "Order is your joy!",
+        "Spotless is your vibe!",
+        "Perfection in every corner!"
+      ],
+      politeness: [
+        "You’re blunt and bold!",
+        "A bit gruff but sweet!",
+        "Polite if it’s easy!",
+        "You’re nice when needed!",
+        "Courtesy’s your thing!",
+        "You’re a polite gem!",
+        "Manners shine bright!",
+        "Respect is your core!",
+        "You’re super courteous!",
+        "Politeness queen!"
+      ],
+      craving: [
+        "Calm is your zone!",
+        "A tiny thrill is enough!",
+        "You dip into intensity!",
+        "Half chill, half wild!",
+        "You like a strong spark!",
+        "Intensity calls you!",
+        "You chase the edge!",
+        "Thrills are your fuel!",
+        "You crave the extreme!",
+        "Limitless seeker!"
+      ],
+      receptiveness: [
+        "You’re your own guide!",
+        "A bit open if safe!",
+        "You listen if it’s clear!",
+        "Half closed, half open!",
+        "You’re warming up!",
+        "Openness feels right!",
+        "You take it all in!",
+        "Guidance is welcome!",
+        "You’re a receiver pro!",
+        "Totally in tune!"
+      ],
       authority: [
         "Soft and shy!",
         "A little lead peeks!",
@@ -477,6 +534,10 @@ class StyleFinderApp {
       dependence: "This asks if you feel safe relying on someone else. Are you super independent, or do you love leaning on others?",
       vulnerability: "We’re seeing how comfy you are opening up emotionally. Do you keep your guard up, or do you share your heart easily?",
       adaptability: "This checks how easily you switch between roles or moods. Are you set in one way, or do you flow with changes?",
+      tidiness: "This question explores how much you enjoy keeping things neat and orderly for someone else. Do you find satisfaction in a spotless space, or are you happier letting things stay a bit wild?",
+      politeness: "We’re checking how naturally you lean toward being courteous and respectful. Are manners a big part of how you interact, or do you prefer a more casual, direct approach?",
+      craving: "This is about how much you seek out intense or extreme experiences. Do you feel a pull toward pushing your boundaries, or do you prefer keeping things gentle and calm?",
+      receptiveness: "Here, we’re asking how open you are to taking in direction or sensations from someone else. Do you welcome guidance and input, or do you like steering your own course?",
       authority: "This is about how natural it feels to take charge. Do you love leading, or do you prefer a softer approach?",
       confidence: "We’re asking how sure you feel in your choices. Are you bold and steady, or do you hesitate sometimes?",
       discipline: "This explores how much you enjoy setting rules. Do you like structure, or are you more relaxed?",
@@ -595,6 +656,26 @@ class StyleFinderApp {
         short: "You’re bound by deep devotion.",
         long: "Thralls offer complete loyalty and submission, thriving in a dynamic of profound trust and surrender.",
         tips: ["Build trust slowly.", "Seek a Master.", "Honor your commitment."]
+      },
+      Puppet: {
+        short: "You love being directed and shaped like a marionette.",
+        long: "Puppets thrive on responsiveness, moving to their partner’s cues with ease and adaptability. This style is about fluidity and trust in being guided.",
+        tips: ["Stay attuned to your partner’s signals.", "Find a Puppeteer who values your flexibility.", "Practice quick responses."]
+      },
+      Maid: {
+        short: "You delight in keeping things tidy and serving politely.",
+        long: "Maids find joy in order and courtesy, creating a pristine environment with a respectful demeanor. This style blends service with refinement.",
+        tips: ["Focus on small, perfect details.", "Seek a Master or Mistress who appreciates polish.", "Balance duty with grace."]
+      },
+      Painslut: {
+        short: "You crave intense pain and thrive on pushing limits.",
+        long: "Painsluts seek out strong sensations, finding exhilaration in discomfort and intensity. This style is bold and boundary-testing.",
+        tips: ["Set clear pain thresholds.", "Pair with a Sadist who respects limits.", "Embrace aftercare."]
+      },
+      Bottom: {
+        short: "You’re open to receiving and enduring sensations.",
+        long: "Bottoms excel at taking in direction and experiences, with stamina to handle prolonged scenes. This style is receptive and resilient.",
+        tips: ["Communicate your capacity.", "Find a Dominant who values your endurance.", "Pace yourself."]
       },
       Dominant: {
         short: "You shine when you’re in charge, guiding with confidence.",
@@ -820,6 +901,30 @@ class StyleFinderApp {
         desc: "A deep bond.",
         longDesc: "Loyalty and worship in power."
       },
+      Puppet: {
+        dynamic: "Puppet Play",
+        match: "Puppeteer",
+        desc: "A dance of control and response.",
+        longDesc: "The Puppet’s adaptability meets the Puppeteer’s precise direction."
+      },
+      Maid: {
+        dynamic: "Service Play",
+        match: "Mistress",
+        desc: "A refined exchange of duty.",
+        longDesc: "Tidiness and politeness shine under a Mistress’s elegant command."
+      },
+      Painslut: {
+        dynamic: "Sadomasochism",
+        match: "Sadist",
+        desc: "A fiery bond of intensity.",
+        longDesc: "Craving meets skillful delivery in a thrilling exchange."
+      },
+      Bottom: {
+        dynamic: "Sensation Play",
+        match: "Dominant",
+        desc: "A steady flow of give and take.",
+        longDesc: "Receptiveness pairs with authority for a balanced dynamic."
+      },
       Dominant: {
         dynamic: "Power Exchange",
         match: "Submissive",
@@ -1013,6 +1118,10 @@ class StyleFinderApp {
       'Babygirl': ['dependence', 'innocence', 'affection'],
       'Captive': ['submissionDepth', 'vulnerability', 'exploration'],
       'Thrall': ['devotion', 'submissionDepth', 'dependence'],
+      'Puppet': ['receptiveness', 'adaptability'],
+      'Maid': ['tidiness', 'politeness'],
+      'Painslut': ['painTolerance', 'craving'],
+      'Bottom': ['receptiveness', 'painTolerance'],
       'Dominant': ['authority', 'confidence', 'leadership'],
       'Assertive': ['boldness', 'intensity', 'authority'],
       'Nurturer': ['care', 'empathy', 'patience'],
@@ -1072,6 +1181,7 @@ class StyleFinderApp {
       'Little': '🍼', 'Puppy': '🐶', 'Kitten': '🐱', 'Princess': '👑', 'Rope Bunny': '🪢',
       'Masochist': '💥', 'Prey': '🏃', 'Toy': '🎲', 'Doll': '🎎', 'Bunny': '🐰',
       'Servant': '🧹', 'Playmate': '🎉', 'Babygirl': '🌸', 'Captive': '⛓️', 'Thrall': '🛐',
+      'Puppet': '🎭', 'Maid': '🧼', 'Painslut': '🔥', 'Bottom': '⬇️',
       'Dominant': '👤', 'Assertive': '💪', 'Nurturer': '🤗', 'Strict': '📏', 'Master': '🎓',
       'Mistress': '👸', 'Daddy': '👨‍🏫', 'Mommy': '👩‍🏫', 'Owner': '🔑', 'Rigger': '🪢',
       'Sadist': '😏', 'Hunter': '🏹', 'Trainer': '🏋️', 'Puppeteer': '🎭', 'Protector': '🛡️',
@@ -1195,90 +1305,55 @@ class StyleFinderApp {
           <button onclick="styleFinderApp.prevStyleFinderStep()" style="background: #ccc;">Back</button>
         `;
         break;
-      case 'result':
-  this.calculateStyleFinderResult();
-  const topStyles = Object.entries(this.styleFinderScores).sort((a, b) => b[1] - a[1]).slice(0, 2);
-  const topStyle = topStyles[0][0];
-  const match = this.dynamicMatches[topStyle];
-  html += `
-    <div class="result-section">
-      <h2 class="result-heading">Your Style</h2>
-      <h3>You’re a ${topStyle}!</h3>
-      <p>${this.styleDescriptions[topStyle].short}
-        <span class="info-icon" onclick="styleFinderApp.showStyleInfo('${topStyle}')">Learn More!</span></p>
-      <p><strong>Score:</strong> ${topStyles[0][1].toFixed(1)}</p>
-        ${topStyles[1] ? `
-          <p><strong>Runner-Up:</strong> ${topStyles[1][0]} (${topStyles[1][1].toFixed(1)})
-            <span class="info-icon" onclick="styleFinderApp.showStyleInfo('${topStyles[1][0]}')">Learn More!</span></p>
-          ` : ''}
-    </div>
-    <div class="result-section">
-      <h2 class="result-heading">Style Tips</h2>
-      <ul style="list-style-type: none; padding-left: 0;">
-        ${this.styleDescriptions[topStyle].tips.map(tip => `<li>🌸 ${tip}</li>`).join('')}
-      </ul>
-    </div>
-    <div class="result-section">
-      <h2 class="result-heading">Your Dynamic Match</h2>
-      <p><em>${match.dynamic}</em>: ${match.desc}
-        <span class="info-icon" onclick="styleFinderApp.showDynamicInfo('${topStyle}', 'dynamic')">Learn More!</span></p>
-      <p><strong>Look for a:</strong> ${match.match} - They’d complement your vibe perfectly!
-        <span class="info-icon" onclick="styleFinderApp.showDynamicInfo('${topStyle}', 'match')">Learn More!</span></p>
-    </div>
-    <div class="result-buttons">
-      <button onclick="styleFinderApp.saveAsCertificate()">Save as Certificate</button>
-      <button onclick="styleFinderApp.shareResult()">Share with a Friend!</button>
-      <button onclick="styleFinderApp.restart()">Try Again!</button>
-      <button onclick="styleFinderApp.prevStyleFinderStep()" style="background: #ccc;">Back</button>
-    </div>
-  `;
-  setTimeout(() => {
-    confetti({ particleCount: 50, spread: 50, origin: { y: 0.6 } });
-  }, 500);
-  break;
+           case 'result':
+        this.calculateStyleFinderResult();
+        const topStyle = Object.entries(this.styleFinderScores).sort((a, b) => b[1] - a[1])[0][0];
+        const matchData = this.dynamicMatches[topStyle];
+        const descData = this.styleDescriptions[topStyle];
+        html += `
+          <div class="result-section fade-in">
+            <h2 class="result-heading">🎉 Your BDSM Style: ${topStyle} 🎉</h2>
+            <p><strong>${descData.short}</strong></p>
+            <p>${descData.long}</p>
+            <h3>Your Dynamic Match: ${matchData.match}</h3>
+            <p><em>${matchData.dynamic}</em> - ${matchData.desc}</p>
+            <p>${matchData.longDesc}</p>
+            <h3>Tips for You:</h3>
+            <ul style="text-align: left; margin: 10px auto; max-width: 300px;">
+              ${descData.tips.map(tip => `<li>${tip}</li>`).join('')}
+            </ul>
+            <div class="result-buttons">
+              <button onclick="styleFinderApp.startOver()">Start Over!</button>
+              <button onclick="styleFinderApp.showFullDetails('${topStyle}')">More Details</button>
+            </div>
+          </div>
+        `;
+        setTimeout(() => confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }), 500);
+        break;
     }
 
     this.elements.stepContent.innerHTML = html;
-    this.elements.stepContent.classList.add('fade-in');
-    setTimeout(() => this.elements.stepContent.classList.remove('fade-in'), 300);
     this.updateDashboard();
-  }
-
-  generateSummaryDashboard() {
-    if (!this.styleFinderRole) return "No scores yet! Pick a role first!";
-    const scores = this.computeCurrentScores();
-    const sortedScores = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-    let summaryHTML = "<ul style='list-style-type: none; padding-left: 0;'>";
-    sortedScores.forEach(([style, score]) => {
-      summaryHTML += `<li>${style}: ${score.toFixed(1)}</li>`;
-    });
-    summaryHTML += "</ul>";
-    return summaryHTML;
   }
 
   setStyleFinderRole(role) {
     this.styleFinderRole = role;
-    this.styleFinderAnswers.traits = {}; // Reset traits, no default values here
-    this.styleFinderStep++;
-    this.renderStyleFinder();
-    this.showFeedback(role === 'submissive' ? "Supporter mode activated!" : "Leader mode engaged!");
+    this.styleFinderAnswers.role = role;
+    this.nextStyleFinderStep();
   }
 
   setStyleFinderTrait(trait, value) {
-    this.styleFinderAnswers.traits[trait] = parseInt(value);
-    this.updateDashboard();
+    this.styleFinderAnswers.traits[trait] = parseInt(value, 10);
+    this.showFeedback(`You vibe with ${trait} at ${value}!`);
   }
 
   nextStyleFinderStep(currentTrait = null) {
-    if (currentTrait) {
-      const slider = document.querySelector('.trait-slider');
-      if (slider && this.styleFinderAnswers.traits[currentTrait] === undefined) {
-        this.styleFinderAnswers.traits[currentTrait] = parseInt(slider.value);
-      }
+    if (currentTrait && !this.styleFinderAnswers.traits[currentTrait]) {
+      this.showFeedback("Please slide to pick a vibe first!");
+      return;
     }
     this.styleFinderStep++;
     this.renderStyleFinder();
-    this.showFeedback();
   }
 
   prevStyleFinderStep() {
@@ -1288,258 +1363,80 @@ class StyleFinderApp {
     }
   }
 
-  calculateStyleFinderResult() {
-    if (!this.styleFinderRole) return;
-    const roleStyles = this.styles[this.styleFinderRole];
-    roleStyles.forEach(style => {
-      this.styleFinderScores[style] = 0;
-    });
-
-    const styleKeyTraits = {
-      'Submissive': ['obedience', 'submissionDepth', 'vulnerability'],
-      'Brat': ['rebellion', 'mischief', 'playfulness'],
-      'Slave': ['service', 'devotion', 'submissionDepth'],
-      'Switch': ['adaptability', 'exploration', 'playfulness'],
-      'Pet': ['affection', 'playfulness', 'devotion'],
-      'Little': ['innocence', 'dependence', 'affection'],
-      'Puppy': ['playfulness', 'devotion', 'affection'],
-      'Kitten': ['sensuality', 'mischief', 'affection'],
-      'Princess': ['sensuality', 'innocence', 'dependence'],
-      'Rope Bunny': ['sensuality', 'exploration', 'submissionDepth'],
-      'Masochist': ['painTolerance', 'submissionDepth', 'vulnerability'],
-      'Prey': ['exploration', 'vulnerability', 'rebellion'],
-      'Toy': ['submissionDepth', 'adaptability', 'service'],
-      'Doll': ['vulnerability', 'dependence', 'sensuality'],
-      'Bunny': ['playfulness', 'innocence', 'affection'],
-      'Servant': ['service', 'obedience', 'devotion'],
-      'Playmate': ['playfulness', 'mischief', 'exploration'],
-      'Babygirl': ['dependence', 'innocence', 'affection'],
-      'Captive': ['submissionDepth', 'vulnerability', 'exploration'],
-      'Thrall': ['devotion', 'submissionDepth', 'dependence'],
-      'Dominant': ['authority', 'confidence', 'leadership'],
-      'Assertive': ['boldness', 'intensity', 'authority'],
-      'Nurturer': ['care', 'empathy', 'patience'],
-      'Strict': ['discipline', 'control', 'precision'],
-      'Master': ['authority', 'possession', 'dominanceDepth'],
-      'Mistress': ['confidence', 'creativity', 'dominanceDepth'],
-      'Daddy': ['care', 'possession', 'empathy'],
-      'Mommy': ['care', 'patience', 'empathy'],
-      'Owner': ['possession', 'control', 'dominanceDepth'],
-      'Rigger': ['creativity', 'precision', 'control'],
-      'Sadist': ['sadism', 'intensity', 'control'],
-      'Hunter': ['boldness', 'leadership', 'intensity'],
-      'Trainer': ['patience', 'discipline', 'leadership'],
-      'Puppeteer': ['control', 'creativity', 'precision'],
-      'Protector': ['care', 'authority', 'possession'],
-      'Disciplinarian': ['discipline', 'authority', 'precision'],
-      'Caretaker': ['care', 'empathy', 'patience'],
-      'Sir': ['authority', 'confidence', 'leadership'],
-      'Goddess': ['confidence', 'intensity', 'dominanceDepth'],
-      'Commander': ['authority', 'intensity', 'dominanceDepth']
-    };
-
-    this.styles[this.styleFinderRole].forEach(style => {
-      const keyTraits = styleKeyTraits[style] || [];
-      keyTraits.forEach(trait => {
-        const rating = this.styleFinderAnswers.traits[trait] || 0;
-        this.styleFinderScores[style] += rating * 1.5;
-      });
-    });
-  }
-
-  showFeedback(message) {
-    if (!this.elements.feedback) return;
-    const funMessages = [
-      "You’re a sparkly unicorn! - ✨🦄",
-      "Vibing like a fluffy cloud! - 🌈☁️",
-      "Eeee, so adorable! - 🐾💕",
-      "Zooming with kitten power! - 🚀😽",
-      "Pawsitively precious! - 🐱🌸",
-      "Sparklies everywhere, yay! - ⚡️✨",
-      "Glowy lil’ star alert! - 🌟🐾",
-      "Firecracker cutie pie! - 🎆💖",
-      "Bouncing bunny vibes! - 🐰🌼",
-      "Sweet as candy, wow! - 🍬😻",
-      "Treasure chest of cute! - 💎💞",
-      "Twirly whirly adorbs! - 🌀✨",
-      "Purring perfection! - 😻🌈",
-      "Blooming like a flower! - 🌸💕",
-      "Tiny hero energy! - 💪🐾"
-    ];
-    this.elements.feedback.textContent = message || funMessages[Math.floor(Math.random() * funMessages.length)];
-    this.elements.feedback.classList.add("feedback-animation");
-    setTimeout(() => this.elements.feedback.classList.remove("feedback-animation"), 2000);
-  }
-
-  showTraitInfo(trait) {
-    const explanation = this.traitExplanations[trait] || "No detailed info available for this trait yet!";
-    const popup = document.createElement('div');
-    popup.className = 'style-info-popup';
-    popup.innerHTML = `
-      <h3>About "${trait}"</h3>
-      <p>${explanation}</p>
-      <button class="close-btn" onclick="this.parentElement.remove()">✖</button>
-    `;
-    document.body.appendChild(popup);
-  }
-
-  showStyleInfo(style) {
-    const desc = this.styleDescriptions[style];
-    const popup = document.createElement('div');
-    popup.className = 'style-info-popup';
-    popup.innerHTML = `
-      <h3>${style}</h3>
-      <p>${desc.long}</p>
-      <button class="close-btn" onclick="this.parentElement.remove()">✖</button>
-    `;
-    document.body.appendChild(popup);
-  }
-
-  showDynamicInfo(style, type) {
-    const match = this.dynamicMatches[style];
-    if (!match) {
-      alert("No dynamic match information available for this style.");
-      return;
-    }
-
-    const popup = document.createElement('div');
-    popup.className = 'style-info-popup';
-    let title, description;
-
-    if (type === 'dynamic') {
-      title = match.dynamic || "Dynamic";
-      description = match.longDesc || "Description not available.";
-    } else {
-      const matchStyle = match.match;
-      const matchDesc = this.styleDescriptions[matchStyle];
-      title = matchStyle || "Match Style";
-      description = matchDesc ? matchDesc.long : "Description not available.";
-    }
-
-    popup.innerHTML = `
-      <h3>${title}</h3>
-      <p>${description}</p>
-      <button class="close-btn" onclick="this.parentElement.remove()">✖</button>
-    `;
-    document.body.appendChild(popup);
-  }
-
-  /** Save result as a certificate text file */
- saveAsCertificate() {
-  const topStyles = Object.entries(this.styleFinderScores).sort((a, b) => b[1] - a[1]).slice(0, 1);
-  const topStyle = topStyles[0][0];
-  const match = this.dynamicMatches[topStyle];
-
-  // Create a canvas element
-  const canvas = document.createElement('canvas');
-  canvas.width = 800; // Width in pixels
-  canvas.height = 600; // Height in pixels
-  const ctx = canvas.getContext('2d');
-
-  // Gradient background (professional yet soft)
-  const isDarkTheme = document.body.getAttribute('data-theme') === 'dark';
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  if (isDarkTheme) {
-    gradient.addColorStop(0, '#3b233a'); // Darker purple
-    gradient.addColorStop(1, '#2b1a2a'); // Dark purple
-  } else {
-    gradient.addColorStop(0, '#fff0f5'); // Light pink
-    gradient.addColorStop(1, '#f8e1e9'); // Softer pink
-  }
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // Font and color settings
-  ctx.fillStyle = isDarkTheme ? '#f8e1e9' : '#3b233a'; // Text color
-  ctx.textAlign = 'center';
-
-  // Title
-  ctx.font = 'bold 40px Georgia, serif'; // Professional serif font
-  ctx.fillStyle = '#ff7096'; // Pink title
-  ctx.fillText('BDSM Style Finder Certificate', canvas.width / 2, 80);
-
-  // Subtle decorative line under title
-  ctx.strokeStyle = '#ff7096';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(150, 100);
-  ctx.lineTo(650, 100);
-  ctx.stroke();
-
-  // Main content
-  ctx.fillStyle = isDarkTheme ? '#f8e1e9' : '#3b233a';
-  ctx.font = '24px Georgia, serif'; // Slightly larger, professional font
-  const lines = [
-    `Certified Style: ${topStyle}`,
-    `${this.styleDescriptions[topStyle].short}`,
-    ``,
-    `Dynamic Match: ${match.dynamic} with a ${match.match}`,
-    `${match.desc}`,
-    ``,
-    `Tips for Excellence:`,
-    ...this.styleDescriptions[topStyle].tips.map(tip => ` • ${tip}`),
-  ];
-
-  let y = 150;
-  lines.forEach(line => {
-    ctx.fillText(line, canvas.width / 2, y);
-    y += 35; // Increased line spacing for readability
-  });
-
-  // Signature line
-  ctx.font = '20px Georgia, serif';
-  ctx.fillText('Certified by Style Finder', canvas.width / 2, canvas.height - 80);
-  ctx.beginPath();
-  ctx.moveTo(300, canvas.height - 60);
-  ctx.lineTo(500, canvas.height - 60);
-  ctx.stroke();
-
-  // Professional border
-  ctx.strokeStyle = '#ff7096';
-  ctx.lineWidth = 4;
-  ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60);
-
-  // Corner accents (subtle decoration)
-  ctx.fillStyle = '#ff7096';
-  ctx.font = '20px Arial';
-  ctx.fillText('✨', 50, 50);
-  ctx.fillText('✨', canvas.width - 50, 50);
-  ctx.fillText('✨', 50, canvas.height - 40);
-  ctx.fillText('✨', canvas.width - 50, canvas.height - 40);
-
-  // Convert canvas to PNG and trigger download
-  const link = document.createElement('a');
-  link.href = canvas.toDataURL('image/png');
-  link.download = 'BDSM_Style_Certificate.png';
-  link.click();
-}
-
-
-  shareResult() {
-    const topStyles = Object.entries(this.styleFinderScores).sort((a, b) => b[1] - a[1]).slice(0, 1);
-    const topStyle = topStyles[0][0];
-    const text = `I’m a ${topStyle} according to the BDSM Style Finder! Check it out: [Your App URL]`;
-    if (navigator.share) {
-      navigator.share({
-        title: 'My BDSM Style Result',
-        text: text,
-        url: window.location.href
-      }).catch(err => console.log('Share failed:', err));
-    } else {
-      alert("Sharing isn’t supported here, but here’s your result: " + text);
-    }
-  }
-
-  restart() {
-    this.styleFinderActive = true;
+  startOver() {
     this.styleFinderStep = 0;
     this.styleFinderRole = null;
     this.styleFinderAnswers = { traits: {} };
     this.styleFinderScores = {};
     this.hasRenderedDashboard = false;
+    this.previousScores = null;
     this.renderStyleFinder();
-    this.showFeedback("Fresh start, yay!");
+    this.showFeedback("Fresh start—here we go!");
+  }
+
+  calculateStyleFinderResult() {
+    this.styleFinderScores = this.computeCurrentScores();
+    const totalAnswers = Object.keys(this.styleFinderAnswers.traits).length;
+    if (totalAnswers === 0) return;
+
+    Object.keys(this.styleFinderScores).forEach(style => {
+      this.styleFinderScores[style] = (this.styleFinderScores[style] / (totalAnswers * 15)) * 100;
+    });
+  }
+
+  generateSummaryDashboard() {
+    const scores = this.computeCurrentScores();
+    const sortedScores = Object.entries(scores).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const maxScore = sortedScores[0][1] || 1;
+    let html = '';
+    sortedScores.forEach(([style, score]) => {
+      const percentage = (score / maxScore) * 100;
+      html += `
+        <div class="dashboard-item">
+          <span class="style-name">${style}</span>
+          <span class="dashboard-score">${score.toFixed(1)}</span>
+        </div>
+      `;
+    });
+    return html;
+  }
+
+  showFeedback(message) {
+    this.elements.feedback.innerHTML = message;
+    this.elements.feedback.classList.add('feedback-animation');
+    setTimeout(() => this.elements.feedback.classList.remove('feedback-animation'), 500);
+  }
+
+  showTraitInfo(trait) {
+    const explanation = this.traitExplanations[trait] || "No extra info available!";
+    const popup = document.createElement('div');
+    popup.className = 'style-info-popup';
+    popup.innerHTML = `
+      <h3>${trait}</h3>
+      <p>${explanation}</p>
+      <button class="close-btn" onclick="this.parentElement.remove()">×</button>
+    `;
+    document.body.appendChild(popup);
+  }
+
+  showFullDetails(style) {
+    const descData = this.styleDescriptions[style];
+    const matchData = this.dynamicMatches[style];
+    const popup = document.createElement('div');
+    popup.className = 'style-info-popup';
+    popup.innerHTML = `
+      <h3>${style}</h3>
+      <p><strong>${descData.short}</strong></p>
+      <p>${descData.long}</p>
+      <h4>Dynamic Match: ${matchData.match}</h4>
+      <p><em>${matchData.dynamic}</em> - ${matchData.longDesc}</p>
+      <h4>Tips:</h4>
+      <ul>${descData.tips.map(tip => `<li>${tip}</li>`).join('')}</ul>
+      <button class="close-btn" onclick="this.parentElement.remove()">×</button>
+    `;
+    document.body.appendChild(popup);
   }
 }
 
+// Instantiate the app
 const styleFinderApp = new StyleFinderApp();
