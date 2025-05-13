@@ -4,10 +4,23 @@ class StyleFinderApp {
     this.styleFinderActive = false;
     this.styleFinderStep = 0;
     this.styleFinderRole = null;
-    this.styleFinderAnswers = { traits: {}, guidingPreference: null };
+    this.styleFinderAnswers = { traits: {}, guidingPreference: null, userDefinedKeyTraits: [] };
     this.styleFinderScores = {};
     this.hasRenderedDashboard = false;
 
+    // Curation State Variables
+    this.curationModeActive = false;
+    this.topArchetypesForCuration = [];
+    this.selectedCuratedElements = {};
+    this.customArchetypeName = "";
+    this.customArchetypeDescription = "";
+
+    // Playground Integration
+    this.playgroundApp = null; 
+    this.quizCompletedOnce = false; 
+    this.lastQuizStepBeforePlayground = null; 
+
+    // --- DATA OBJECTS ---
     // Style categories
     this.styles = {
       submissive: [
@@ -20,89 +33,21 @@ class StyleFinderApp {
         'Hunter', 'Trainer', 'Puppeteer', 'Protector', 'Caretaker', 'Sir', 'Goddess', 'Commander'
       ]
     };
-
-    // Submissive traits (randomized order)
+    // Submissive traits
     this.subFinderTraits = [
-      { name: 'obedience', desc: 'How deeply do you resonate with following instructions or rules from a trusted guide?' },
-      { name: 'rebellion', desc: 'Is there a spark of joy in playfully resisting or teasing when someone tries to direct you?' },
-      { name: 'service', desc: 'How fulfilling is it to assist, perform tasks, or dedicate yourself to another\'s happiness?' },
-      { name: 'playfulness', desc: 'How much do silly games, lighthearted mischief, or imaginative scenarios call to you?' },
-      { name: 'sensuality', desc: 'Do soft touches, varied textures, or heightened physical sensations ignite your senses?' },
-      { name: 'exploration', desc: 'How strong is your desire to venture into new experiences or uncharted territories of sensation?' },
-      { name: 'devotion', desc: 'Does profound loyalty and unwavering commitment to someone bring you a deep sense of purpose?' },
-      { name: 'innocence', desc: 'How much do you enjoy embodying a carefree, pure, or even childlike essence in interactions?' },
-      { name: 'mischief', desc: 'What is your affinity for stirring things up with a cheeky prank or playful, well-intentioned trouble?' },
-      { name: 'affection', desc: 'How vital is physical closeness, like hugs, cuddles, or gentle nuzzling, for you to feel connected?' },
-      { name: 'painTolerance', desc: 'Does a spectrum of discomfort, from a light sting to intense sensations, excite or intrigue you?' },
-      { name: 'submissionDepth', desc: 'How completely do you yearn to let go, entrusting your full control to another?' },
-      { name: 'dependence', desc: 'Is there comfort and security for you in relying on another for guidance and decision-making?' },
-      { name: 'vulnerability', desc: 'How natural and right does it feel to open up emotionally, exposing your innermost self?' },
-      { name: 'adaptability', desc: 'How readily can you shift between different roles, moods, or adjust to new expectations in a dynamic?' },
-      { name: 'tidiness', desc: 'Do you find satisfaction in maintaining perfect order, cleanliness, and organization for another?' },
-      { name: 'politeness', desc: 'Does courteous, respectful, and mannered interaction come naturally and feel important to you?' },
-      { name: 'craving', desc: 'Do you actively seek intense, boundary-pushing sensations or experiences that test your limits?' },
-      { name: 'receptiveness', desc: 'How open are you to truly receiving direction, sensations, or guidance from another without reservation?' }
+      { name: 'obedience', desc: 'How deeply do you resonate with following instructions or rules from a trusted guide?' }, { name: 'rebellion', desc: 'Is there a spark of joy in playfully resisting or teasing when someone tries to direct you?' }, { name: 'service', desc: 'How fulfilling is it to assist, perform tasks, or dedicate yourself to another\'s happiness?' }, { name: 'playfulness', desc: 'How much do silly games, lighthearted mischief, or imaginative scenarios call to you?' }, { name: 'sensuality', desc: 'Do soft touches, varied textures, or heightened physical sensations ignite your senses?' }, { name: 'exploration', desc: 'How strong is your desire to venture into new experiences or uncharted territories of sensation?' }, { name: 'devotion', desc: 'Does profound loyalty and unwavering commitment to someone bring you a deep sense of purpose?' }, { name: 'innocence', desc: 'How much do you enjoy embodying a carefree, pure, or even childlike essence in interactions?' }, { name: 'mischief', desc: 'What is your affinity for stirring things up with a cheeky prank or playful, well-intentioned trouble?' }, { name: 'affection', desc: 'How vital is physical closeness, like hugs, cuddles, or gentle nuzzling, for you to feel connected?' }, { name: 'painTolerance', desc: 'Does a spectrum of discomfort, from a light sting to intense sensations, excite or intrigue you?' }, { name: 'submissionDepth', desc: 'How completely do you yearn to let go, entrusting your full control to another?' }, { name: 'dependence', desc: 'Is there comfort and security for you in relying on another for guidance and decision-making?' }, { name: 'vulnerability', desc: 'How natural and right does it feel to open up emotionally, exposing your innermost self?' }, { name: 'adaptability', desc: 'How readily can you shift between different roles, moods, or adjust to new expectations in a dynamic?' }, { name: 'tidiness', desc: 'Do you find satisfaction in maintaining perfect order, cleanliness, and organization for another?' }, { name: 'politeness', desc: 'Does courteous, respectful, and mannered interaction come naturally and feel important to you?' }, { name: 'craving', desc: 'Do you actively seek intense, boundary-pushing sensations or experiences that test your limits?' }, { name: 'receptiveness', desc: 'How open are you to truly receiving direction, sensations, or guidance from another without reservation?' }
     ].sort(() => 0.5 - Math.random());
-
     this.subTraitFootnotes = {
-      obedience: "1: Rarely follows / 10: Always obeys implicitly",
-      rebellion: "1: Utterly compliant / 10: Master of playful defiance",
-      service: "1: Self-focused primarily / 10: Driven by acts of service",
-      playfulness: "1: Generally serious / 10: Embodiment of playful spirit",
-      sensuality: "1: Prefers less sensory input / 10: Craves rich sensory experiences",
-      exploration: "1: Prefers the known / 10: Eagerly seeks the unknown",
-      devotion: "1: Highly independent / 10: Capable of profound devotion",
-      innocence: "1: Feels mature/worldly / 10: Cherishes childlike innocence",
-      mischief: "1: Prefers calm / 10: Delightfully mischievous",
-      affection: "1: Prefers personal space / 10: Craves constant affection",
-      painTolerance: "1: Avoids all pain / 10: Embraces intense sensations",
-      submissionDepth: "1: Enjoys light guidance / 10: Yearns for total surrender",
-      dependence: "1: Fiercely self-reliant / 10: Finds comfort in dependence",
-      vulnerability: "1: Heavily guarded / 10: Naturally open and vulnerable",
-      adaptability: "1: Prefers a fixed role / 10: Highly versatile and fluid",
-      tidiness: "1: Happily chaotic / 10: Devoted to pristine order",
-      politeness: "1: Casual and direct / 10: Epitome of courtesy",
-      craving: "1: Prefers gentle experiences / 10: Seeks extreme thrills",
-      receptiveness: "1: Internally directed / 10: Fully open to external input"
+      obedience: "1: Rarely follows / 10: Always obeys implicitly",rebellion: "1: Utterly compliant / 10: Master of playful defiance",service: "1: Self-focused primarily / 10: Driven by acts of service",playfulness: "1: Generally serious / 10: Embodiment of playful spirit",sensuality: "1: Prefers less sensory input / 10: Craves rich sensory experiences",exploration: "1: Prefers the known / 10: Eagerly seeks the unknown",devotion: "1: Highly independent / 10: Capable of profound devotion",innocence: "1: Feels mature/worldly / 10: Cherishes childlike innocence",mischief: "1: Prefers calm / 10: Delightfully mischievous",affection: "1: Prefers personal space / 10: Craves constant affection",painTolerance: "1: Avoids all pain / 10: Embraces intense sensations",submissionDepth: "1: Enjoys light guidance / 10: Yearns for total surrender",dependence: "1: Fiercely self-reliant / 10: Finds comfort in dependence",vulnerability: "1: Heavily guarded / 10: Naturally open and vulnerable",adaptability: "1: Prefers a fixed role / 10: Highly versatile and fluid",tidiness: "1: Happily chaotic / 10: Devoted to pristine order",politeness: "1: Casual and direct / 10: Epitome of courtesy",craving: "1: Prefers gentle experiences / 10: Seeks extreme thrills",receptiveness: "1: Internally directed / 10: Fully open to external input"
     };
-
-    // Dominant traits (randomized order)
+    // Dominant traits
     this.domFinderTraits = [
-      { name: 'authority', desc: 'How natural and invigorating is it for you to take command and lead?' },
-      { name: 'confidence', desc: 'How unwavering is your belief in your decisions and your ability to guide?' },
-      { name: 'discipline', desc: 'Do you find satisfaction in establishing firm rules and ensuring they are followed?' },
-      { name: 'boldness', desc: 'How fearlessly do you embrace challenges and navigate new or intense situations?' },
-      { name: 'care', desc: 'How strong is your instinct to nurture, support, and protect those under your guidance?' },
-      { name: 'empathy', desc: 'How intuitively do you connect with and understand the emotions and needs of others?' },
-      { name: 'control', desc: 'How much do you thrive on meticulously directing details and orchestrating outcomes?' },
-      { name: 'creativity', desc: 'Do you delight in crafting unique scenarios, experiences, or methods of interaction?' },
-      { name: 'precision', desc: 'How important is meticulous attention to detail and flawless execution to you?' },
-      { name: 'intensity', desc: 'Do you bring a potent, focused, and powerful energy to your interactions and scenes?' },
-      { name: 'sadism', desc: 'Does the artful, consensual giving of pain or psychological challenge excite you?' },
-      { name: 'leadership', desc: 'How naturally do you assume the role of guiding others towards a shared or set goal?' },
-      { name: 'possession', desc: 'How profound is your sense of pride and responsibility in what (or whom) you consider "yours"?' },
-      { name: 'patience', desc: 'How calm and steadfast are you while teaching, training, or waiting for compliance?' },
-      { name: 'dominanceDepth', desc: 'Do you crave a dynamic where your power is absolute and your influence all-encompassing?' }
+      { name: 'authority', desc: 'How natural and invigorating is it for you to take command and lead?' },{ name: 'confidence', desc: 'How unwavering is your belief in your decisions and your ability to guide?' },{ name: 'discipline', desc: 'Do you find satisfaction in establishing firm rules and ensuring they are followed?' },{ name: 'boldness', desc: 'How fearlessly do you embrace challenges and navigate new or intense situations?' },{ name: 'care', desc: 'How strong is your instinct to nurture, support, and protect those under your guidance?' },{ name: 'empathy', desc: 'How intuitively do you connect with and understand the emotions and needs of others?' },{ name: 'control', desc: 'How much do you thrive on meticulously directing details and orchestrating outcomes?' },{ name: 'creativity', desc: 'Do you delight in crafting unique scenarios, experiences, or methods of interaction?' },{ name: 'precision', desc: 'How important is meticulous attention to detail and flawless execution to you?' },{ name: 'intensity', desc: 'Do you bring a potent, focused, and powerful energy to your interactions and scenes?' },{ name: 'sadism', desc: 'Does the artful, consensual giving of pain or psychological challenge excite you?' },{ name: 'leadership', desc: 'How naturally do you assume the role of guiding others towards a shared or set goal?' },{ name: 'possession', desc: 'How profound is your sense of pride and responsibility in what (or whom) you consider "yours"?' },{ name: 'patience', desc: 'How calm and steadfast are you while teaching, training, or waiting for compliance?' },{ name: 'dominanceDepth', desc: 'Do you crave a dynamic where your power is absolute and your influence all-encompassing?' }
     ].sort(() => 0.5 - Math.random());
-
     this.domTraitFootnotes = {
-      authority: "1: Prefers to suggest / 10: Naturally commands",
-      confidence: "1: Often hesitant / 10: Unshakeably self-assured",
-      discipline: "1: Very relaxed approach / 10: Enjoys strict structure",
-      boldness: "1: Highly cautious / 10: Fearlessly dives in",
-      care: "1: More detached / 10: Deeply caring and protective",
-      empathy: "1: Logically focused / 10: Highly intuitive and empathetic",
-      control: "1: Prefers to delegate / 10: Craves total control",
-      creativity: "1: Prefers routines / 10: Exceptionally imaginative",
-      precision: "1: Prefers broad strokes / 10: Meticulous to the core",
-      intensity: "1: Gentle and soft / 10: Radiates powerful intensity",
-      sadism: "1: Avoids causing discomfort / 10: Finds artistry in consensual pain",
-      leadership: "1: Prefers to follow / 10: A natural-born leader",
-      possession: "1: Prefers autonomy for all / 10: Deeply possessive and protective",
-      patience: "1: Easily impatient / 10: Endlessly patient",
-      dominanceDepth: "1: Enjoys light influence / 10: Desires complete dominance"
+      authority: "1: Prefers to suggest / 10: Naturally commands",confidence: "1: Often hesitant / 10: Unshakeably self-assured",discipline: "1: Very relaxed approach / 10: Enjoys strict structure",boldness: "1: Highly cautious / 10: Fearlessly dives in",care: "1: More detached / 10: Deeply caring and protective",empathy: "1: Logically focused / 10: Highly intuitive and empathetic",control: "1: Prefers to delegate / 10: Craves total control",creativity: "1: Prefers routines / 10: Exceptionally imaginative",precision: "1: Prefers broad strokes / 10: Meticulous to the core",intensity: "1: Gentle and soft / 10: Radiates powerful intensity",sadism: "1: Avoids causing discomfort / 10: Finds artistry in consensual pain",leadership: "1: Prefers to follow / 10: A natural-born leader",possession: "1: Prefers autonomy for all / 10: Deeply possessive and protective",patience: "1: Easily impatient / 10: Endlessly patient",dominanceDepth: "1: Enjoys light influence / 10: Desires complete dominance"
     };
-
+    // Slider Descriptions
     this.sliderDescriptions = {
       obedience: ["A free spirit, you dance to your own beat!","Rules are mere whispers in the wind to you.","You'll consider following, if the mood is right!","A hint of compliance, when it suits your fancy.","Gentle guidance? You can roll with that.","Following instructions can feel surprisingly good.","Pleasing through obedience offers a quiet satisfaction.","'Yes' is a word you offer with thoughtful consideration.","A sweet request often earns your willing accord.","Your 'yes' is a gift, offered with radiant trust."],
       rebellion: ["The soul of compliance, you bend like a willow.","A tiny 'perhaps not' might escape your lips.","You playfully nudge boundaries with a charming smile.","Teasing and testing rules is your delightful game.","A perfect blend of 'yes' and 'no, but make it cute'.","You push back with an irresistible, sparkling charm.","Defiance, for you, is an art form of connection.","A playful 'no' is your favorite kind of 'yes, please'.","Rebellious energy dances in your every move.","You are the star of delightful, cheeky insubordination!"],
@@ -139,47 +84,13 @@ class StyleFinderApp {
       patience: ["Fast, now, and preferring immediate results!","A moment of waiting, a brief pause, slips in.","You'll chill and wait if it's quick and clearly defined.","Half rushing and eager, half calm and composed.","You're cooling down, finding the virtue in waiting.","Patience is becoming your quiet, steady strength.","You wait with grace, composure, and understanding.","Calm, unwavering patience is your superpower.","You are a zen star, a beacon of tranquil waiting.","Total peace, the embodiment of perfect patience!"],
       dominanceDepth: ["Light, free, and preferring gentle influence.","A subtle hold, a hint of deeper control, peeks out.","You'll lead and direct if it's easy and welcomed.","Half soft and suggestive, half firm and authoritative.","You're taking charge, embracing your inner power.","Power, wielded responsibly, is your radiant glow.","You rule with ease, wisdom, and clear intention.","Total, profound control is the core of your being.","You are a rare gem of potent, ethical power.","A total ruler, a sovereign of your domain!"]
     };
-
+    // Trait Explanations - FULLY POPULATED
     this.traitExplanations = {
-      obedience: "This explores your inclination to follow instructions or yield to another's guidance. High scores suggest comfort with clear direction and rules, while low scores indicate a preference for autonomy or questioning directives.",
-      rebellion: "This measures your tendency towards playful defiance or testing boundaries. High scores point to enjoying a spirited challenge and 'taming' dynamics, while low scores suggest a more compliant or direct approach to interaction.",
-      service: "This assesses the fulfillment you derive from performing acts of service or dedicating yourself to another's needs. High scores indicate a strong desire to please and assist, while low scores suggest other forms of connection are more primary.",
-      playfulness: "This gauges your love for lighthearted fun, games, and imaginative scenarios. High scores mean you thrive on silliness and creative play, while low scores point to a more serious or grounded interactive style.",
-      sensuality: "This looks at your responsiveness to physical sensations like touch, texture, and atmosphere. High scores indicate a deep appreciation for rich sensory input, while low scores suggest a preference for less intense or more focused sensory experiences.",
-      exploration: "This checks your eagerness to try new things, roles, or sensations. High scores mean you're adventurous and open to the unknown, while low scores suggest comfort with familiar routines and experiences.",
-      devotion: "This measures the depth of loyalty and commitment you feel towards a partner or ideal. High scores indicate a capacity for profound, unwavering dedication, while low scores suggest a more independent or less intensely focused bond.",
-      innocence: "This assesses your enjoyment of embodying a carefree, childlike, or pure persona. High scores point to a love for 'little space' or similar dynamics, while low scores suggest a preference for more mature or sophisticated roles.",
-      mischief: "This gauges your affinity for playful troublemaking or cheeky pranks. High scores indicate a love for stirring things up lightheartedly, while low scores suggest a preference for calmer, more predictable interactions.",
-      affection: "This explores your need for physical closeness, warmth, and expressed tenderness. High scores mean you crave cuddles and overt affection, while low scores suggest you're comfortable with more personal space or subtle expressions.",
-      painTolerance: "This measures your interest in or capacity to experience and find meaning/pleasure in consensually given physical or psychological discomfort. High scores indicate an attraction to masochism or intense sensation play.",
-      submissionDepth: "This assesses how completely you desire to surrender control to another. High scores point to a yearning for total power exchange, while low scores suggest a preference for lighter guidance or shared control.",
-      dependence: "This gauges your comfort with relying on another for guidance, decisions, or care. High scores indicate a sense of security in dependence, while low scores suggest a strong preference for self-reliance.",
-      vulnerability: "This measures how comfortable you are with emotional openness and exposing your inner self. High scores point to a natural ease with being vulnerable, while low scores indicate a more guarded emotional posture.",
-      adaptability: "This checks your ability to switch between roles, moods, or styles of interaction. High scores indicate versatility (e.g., a Switch), while low scores suggest a preference for a consistent role.",
-      tidiness: "This explores your enjoyment of maintaining order, cleanliness, and organization, potentially for another. High scores suggest a 'neat freak' or service-oriented tidiness, low scores a comfort with chaos.",
-      politeness: "This assesses your natural inclination towards courteous, respectful, and mannered interactions. High scores indicate formality or deep respect is key, low scores a more casual or blunt style.",
-      craving: "This measures your desire for intense, boundary-pushing, or extreme experiences. High scores point to a thrill-seeking nature, while low scores suggest a preference for gentler, more moderate sensations.",
-      receptiveness: "This gauges your openness to truly receiving and internalizing direction, sensation, or energy from another. High scores indicate a strong 'bottoming' or receptive capacity, low scores a more self-directed approach.",
-      authority: "This measures your natural inclination to take charge, make decisions, and lead. High scores indicate a strong Dominant tendency, while low scores suggest a preference for supporting or following roles.",
-      confidence: "This assesses your self-assurance in your decisions, guidance, and ability to hold a dominant role. High scores point to unwavering conviction, while low scores might indicate hesitation or a softer approach.",
-      discipline: "This explores your enjoyment of setting and enforcing rules, structure, and expectations. High scores indicate a 'Strict' or 'Disciplinarian' tendency, while low scores suggest a more relaxed, less rule-bound style.",
-      boldness: "This gauges your fearlessness in facing challenges, trying new things, or taking initiative in a dominant capacity. High scores point to an 'Assertive' or 'Hunter' type, low scores a more cautious or gentle approach.",
-      care: "This measures your instinct to nurture, protect, and support those under your guidance. High scores indicate a 'Nurturer,' 'Caretaker,' 'Daddy,' or 'Mommy' tendency, while low scores suggest a less overtly protective style.",
-      empathy: "This assesses your ability to intuitively understand and connect with the emotional state of your partner. High scores are crucial for ethical dominance and roles like 'Nurturer,' while low scores might indicate a more objective or pragmatic approach.",
-      control: "This explores your desire to direct, manage, and orchestrate aspects of a dynamic or your partner. High scores point to roles like 'Master,' 'Owner,' or 'Puppeteer,' while low scores suggest a preference for less micromanagement.",
-      creativity: "This gauges your enjoyment in crafting unique scenarios, methods of interaction, or artistic expressions within a dynamic. High scores are typical for 'Riggers,' 'Puppeteers,' or imaginative Dominants.",
-      precision: "This measures the importance you place on meticulous detail, flawless execution, and exacting standards. High scores are common in 'Riggers,' 'Strict' types, or 'Masters' with specific protocols.",
-      intensity: "This assesses the focused, powerful energy you bring to interactions. High scores suggest a 'Sadist,' 'Hunter,' or 'Commander' who thrives on potent exchanges, while low scores indicate a softer, gentler presence.",
-      sadism: "This explores your interest in the artful, consensual giving of physical or psychological pain/challenge. High scores point clearly to a Sadist archetype, recognizing the need for ethics and consent.",
-      leadership: "This measures your natural ability to guide, inspire, and direct others towards a goal. It's a core trait for many Dominant roles, especially 'Master,' 'Commander,' or 'Sir.'",
-      possession: "This gauges your sense of protective ownership or profound responsibility for a partner. High scores are typical for 'Owners,' 'Masters,' or 'Daddies/Mommies' who feel a deep bond of belonging.",
-      patience: "This assesses your ability to remain calm, steadfast, and understanding while teaching, training, or awaiting compliance. Crucial for 'Trainers,' 'Nurturers,' and any Dominant working with a learning or testing partner.",
-      dominanceDepth: "This explores your desire for a comprehensive and profound level of power within a dynamic. High scores point to roles like 'Master,' 'Goddess,' or those seeking total power exchange."
+      obedience: "This explores your inclination to follow instructions or yield to another's guidance. High scores suggest comfort with clear direction and rules, while low scores indicate a preference for autonomy or questioning directives.",rebellion: "This measures your tendency towards playful defiance or testing boundaries. High scores point to enjoying a spirited challenge and 'taming' dynamics, while low scores suggest a more compliant or direct approach to interaction.",service: "This assesses the fulfillment you derive from performing acts of service or dedicating yourself to another's needs. High scores indicate a strong desire to please and assist, while low scores suggest other forms of connection are more primary.",playfulness: "This gauges your love for lighthearted fun, games, and imaginative scenarios. High scores mean you thrive on silliness and creative play, while low scores point to a more serious or grounded interactive style.",sensuality: "This looks at your responsiveness to physical sensations like touch, texture, and atmosphere. High scores indicate a deep appreciation for rich sensory input, while low scores suggest a preference for less intense or more focused sensory experiences.",exploration: "This checks your eagerness to try new things, roles, or sensations. High scores mean you're adventurous and open to the unknown, while low scores suggest comfort with familiar routines and experiences.",devotion: "This measures the depth of loyalty and commitment you feel towards a partner or ideal. High scores indicate a capacity for profound, unwavering dedication, while low scores suggest a more independent or less intensely focused bond.",innocence: "This assesses your enjoyment of embodying a carefree, childlike, or pure persona. High scores point to a love for 'little space' or similar dynamics, while low scores suggest a preference for more mature or sophisticated roles.",mischief: "This gauges your affinity for playful troublemaking or cheeky pranks. High scores indicate a love for stirring things up lightheartedly, while low scores suggest a preference for calmer, more predictable interactions.",affection: "This explores your need for physical closeness, warmth, and expressed tenderness. High scores mean you crave cuddles and overt affection, while low scores suggest you're comfortable with more personal space or subtle expressions.",painTolerance: "This measures your interest in or capacity to experience and find meaning/pleasure in consensually given physical or psychological discomfort. High scores indicate an attraction to masochism or intense sensation play.",submissionDepth: "This assesses how completely you desire to surrender control to another. High scores point to a yearning for total power exchange, while low scores suggest a preference for lighter guidance or shared control.",dependence: "This gauges your comfort with relying on another for guidance, decisions, or care. High scores indicate a sense of security in dependence, while low scores suggest a strong preference for self-reliance.",vulnerability: "This measures how comfortable you are with emotional openness and exposing your inner self. High scores point to a natural ease with being vulnerable, while low scores indicate a more guarded emotional posture.",adaptability: "This checks your ability to switch between roles, moods, or styles of interaction. High scores indicate versatility (e.g., a Switch), while low scores suggest a preference for a consistent role.",tidiness: "This explores your enjoyment of maintaining order, cleanliness, and organization, potentially for another. High scores suggest a 'neat freak' or service-oriented tidiness, low scores a comfort with chaos.",politeness: "This assesses your natural inclination towards courteous, respectful, and mannered interactions. High scores indicate formality or deep respect is key, low scores a more casual or blunt style.",craving: "This measures your desire for intense, boundary-pushing, or extreme experiences. High scores point to a thrill-seeking nature, while low scores suggest a preference for gentler, more moderate sensations.",receptiveness: "This gauges your openness to truly receiving and internalizing direction, sensation, or energy from another. High scores indicate a strong 'bottoming' or receptive capacity, low scores a more self-directed approach.",authority: "This measures your natural inclination to take charge, make decisions, and lead. High scores indicate a strong Dominant tendency, while low scores suggest a preference for supporting or following roles.",confidence: "This assesses your self-assurance in your decisions, guidance, and ability to hold a dominant role. High scores point to unwavering conviction, while low scores might indicate hesitation or a softer approach.",discipline: "This explores your enjoyment of setting and enforcing rules, structure, and expectations. High scores indicate a 'Strict' or 'Disciplinarian' tendency, while low scores suggest a more relaxed, less rule-bound style.",boldness: "This gauges your fearlessness in facing challenges, trying new things, or taking initiative in a dominant capacity. High scores point to an 'Assertive' or 'Hunter' type, low scores a more cautious or gentle approach.",care: "This measures your instinct to nurture, protect, and support those under your guidance. High scores indicate a 'Nurturer,' 'Caretaker,' 'Daddy,' or 'Mommy' tendency, while low scores suggest a less overtly protective style.",empathy: "This assesses your ability to intuitively understand and connect with the emotional state of your partner. High scores are crucial for ethical dominance and roles like 'Nurturer,' while low scores might indicate a more objective or pragmatic approach.",control: "This explores your desire to direct, manage, and orchestrate aspects of a dynamic or your partner. High scores point to roles like 'Master,' 'Owner,' or 'Puppeteer,' while low scores suggest a preference for less micromanagement.",creativity: "This gauges your enjoyment in crafting unique scenarios, methods of interaction, or artistic expressions within a dynamic. High scores are typical for 'Riggers,' 'Puppeteers,' or imaginative Dominants.",precision: "This measures the importance you place on meticulous detail, flawless execution, and exacting standards. High scores are common in 'Riggers,' 'Strict' types, or 'Masters' with specific protocols.",intensity: "This assesses the focused, powerful energy you bring to interactions. High scores suggest a 'Sadist,' 'Hunter,' or 'Commander' who thrives on potent exchanges, while low scores indicate a softer, gentler presence.",sadism: "This explores your interest in the artful, consensual giving of physical or psychological pain/challenge. High scores point clearly to a Sadist archetype, recognizing the need for ethics and consent.",leadership: "This measures your natural ability to guide, inspire, and direct others towards a goal. It's a core trait for many Dominant roles, especially 'Master,' 'Commander,' or 'Sir.'",possession: "This gauges your sense of protective ownership or profound responsibility for a partner. High scores are typical for 'Owners,' 'Masters,' or 'Daddies/Mommies' who feel a deep bond of belonging.",patience: "This assesses your ability to remain calm, steadfast, and understanding while teaching, training, or awaiting compliance. Crucial for 'Trainers,' 'Nurturers,' and any Dominant working with a learning or testing partner.",dominanceDepth: "This explores your desire for a comprehensive and profound level of power within a dynamic. High scores point to roles like 'Master,' 'Goddess,' or those seeking total power exchange."
     };
-
+    // Style Descriptions & Dynamic Matches - FULLY POPULATED
     this.styleDescriptions = {
-      // --- SUBMISSIVE STYLES ---
-      Brat: {
+       Brat: {
         title: "The Sparking Imp: Brat", icon: "😈",
         flavorText: "Rules are merely suggestions, darling. And I'm *awfully* good at creative reinterpretations.",
         essence: "The Brat is a whirlwind of playful defiance and mischievous charm. They thrive on testing boundaries, not to break them, but to engage in a spirited dance of wits and wills. It's a quest for attention, for the delicious friction of being 'tamed,' and for the underlying affection that makes the game worthwhile.",
@@ -267,7 +178,7 @@ class StyleFinderApp {
         thrivesWith: ["Other Switches, or partners who are open to exploring different roles and are good communicators.", "Excellent communication skills, clear signals, and explicit negotiation for role changes or preferences.", "A mutual desire for exploration, flexibility, and a deep understanding of power dynamics.", "Partners who appreciate the nuanced understanding, empathy, and versatility a Switch brings to the table."],
         pathwaysToExploration: ["Develop clear verbal or non-verbal signals/rituals for initiating a switch in roles.", "Discuss preferences for specific dominant and submissive activities with your partner(s) for when you're in each role.", "Explore scenarios or scenes that specifically involve a deliberate shift in power mid-scene.", "Keep a journal to reflect on experiences in both roles, noting what you enjoy, learn, and desire from each perspective."]
       },
-Puppy: {
+      Puppy: {
         title: "The Loyal Playmate: Puppy", icon: "🐶",
         flavorText: "A happy bark, a playful bound, my world revolves around your kind command and joyful games!",
         essence: "The Puppy embodies boundless enthusiasm, loyalty, and a love for playful interaction, mirroring the endearing qualities of a canine companion. They thrive on praise, affection, clear guidance (training), and the joy of pleasing their Owner or Trainer. This style is often energetic, eager, and deeply affectionate, seeking a structured yet loving environment.",
@@ -443,11 +354,61 @@ Puppy: {
         thrivesWith: ["A skilled, attentive, and ethical Top who understands their specific 'bottoming' preferences and limits.", "Clear communication, safe words, and ongoing consent.", "Tops who are good at pacing, monitoring responses, and providing appropriate aftercare.", "Dynamics where their capacity to receive and endure is valued and respected."],
         pathwaysToExploration: ["Identify what kinds of 'input' you most enjoy receiving (e.g., physical sensation, psychological play, emotional intensity, specific tasks).", "Practice communicating your limits, desires, and feedback clearly to your Top(s).", "Develop your skills in 'riding the wave' of intense sensations or emotions.", "Create a personalized aftercare routine that helps you process and integrate your experiences."]
       },
-
-      // --- PREVIOUSLY FLESHED-OUT DOMINANT STYLES (Disciplinarian, Master, Nurturer, Sadist, Owner) ---
-      // Again, assumed to be present from prior response.
-      // CONTINUING the DOMINANT list:
-
+ Disciplinarian: {
+        title: "The Guiding Hand: Disciplinarian", icon: "✋",
+        flavorText: "Order is not merely imposed; it is cultivated. And growth often blossoms under a firm, guiding hand.",
+        essence: "The Disciplinarian finds satisfaction in structure, guidance, and the art of shaping behavior. They establish clear rules and expectations, not for the sake of power alone, but to foster growth, understanding, or a particular desired dynamic. Their approach is often firm, fair, and consistent, valuing the responsiveness of their partner.",
+        coreMotivations: ["To create a structured environment where expectations are clear and understood.", "To guide and shape a partner's behavior, skills, or mindset constructively.", "To derive satisfaction from seeing rules understood, followed, and contributing to a positive dynamic.", "To test a partner's limits (consensually) and encourage their development and self-awareness."],
+        keyCharacteristics: ["Firm, fair, and consistent in applying rules and consequences.", "Values order, clarity, and predictability.", "Observant of behavior and responses, providing clear feedback.", "Often patient but with clear expectations of compliance and effort.", "Can be stern when necessary, but often with underlying care, a specific goal, or even playful intent."],
+        strengthsInDynamic: ["Provides a strong sense of security and predictability for those who thrive on structure.", "Excellent at 'taming' Brats, training Pets, or guiding those in service roles.", "Can help partners explore their limits, discover new aspects of their submission, and build discipline.", "Fosters clear communication about expectations, boundaries, and consequences."],
+        potentialChallenges: ["Can become overly rigid or dogmatic if not balanced with empathy, flexibility, and humor.", "Risk of the submissive feeling policed or overly criticized rather than guided or cared for.", "Maintaining fairness and ensuring discipline feels constructive/playful rather than purely punitive.", "Requires ongoing consent, feedback, and adaptation to ensure methods are well-received and effective."],
+        thrivesWith: ["A submissive who genuinely desires structure, clear rules, and guidance (e.g., Brat, Slave, Pet, Little needing boundaries).", "Partners who are responsive to feedback, willing to learn or adapt, and appreciate consistency.", "Clear communication about the *purpose* of the discipline (play, training, order, self-improvement).", "An understanding that discipline is a tool within a broader dynamic of care, respect, or playfulness."],
+        pathwaysToExploration: ["Collaboratively establish a set of clear, understandable rules and agreed-upon consequences (and rewards!).", "Incorporate 'rewards' for compliance, effort, or improvement, not just consequences for infractions.", "Practice different tones of discipline – from playful sternness and teasing 'corrections' to serious instruction and firm boundary setting.", "Regularly check in with your partner (both in and out of dynamic) about how the disciplinary aspects are feeling and their effectiveness."]
+      },
+      Master: {
+        title: "The Sovereign Architect: Master/Mistress", icon: "🎓",
+        flavorText: "True command is not merely about chains, but about the profound responsibility of shaping a devoted life, mind, and spirit.",
+        essence: "The Master or Mistress is an archetype of deep authority, profound responsibility, and often, an all-encompassing connection. They take on the comprehensive guidance and, at times, 'ownership' (consensual) of a submissive or slave, crafting a dynamic built on immense trust, clearly defined protocols, and mutual understanding. This role is less about fleeting scenes and more about a structured, ongoing relationship dynamic where the Dominant architects the framework of their shared world.",
+        coreMotivations: ["To guide, mentor, and take profound responsibility for a devoted partner's well-being and growth within the dynamic.", "To create and maintain a highly structured and intentional dynamic with clear roles, expectations, and philosophies.", "To experience a deep, unbreakable bond of trust, loyalty, and consensual power exchange.", "To see their partner flourish, find fulfillment, and achieve their potential within the established framework."],
+        keyCharacteristics: ["Authoritative, decisive, and exceptionally confident in their vision and leadership.", "Possesses a strong sense of responsibility, ethics, and commitment to their partner.", "Values loyalty, obedience, trust, and dedication implicitly.", "Often has a clear, long-term vision for the dynamic and its evolution.", "Communicates expectations, philosophies, and standards clearly and upholds them consistently.", "Deeply invested in the holistic well-being (emotional, mental, physical, spiritual) of their submissive/slave."],
+        strengthsInDynamic: ["Provides a powerful sense of stability, security, purpose, and direction for their submissive/slave.", "Fosters unparalleled levels of trust, intimacy, and a unique, profound connection.", "Can facilitate significant personal growth, self-discovery, and exploration for both partners within a safe structure.", "Creates a unique and deeply meaningful bond that often transcends typical relationship paradigms."],
+        potentialChallenges: ["The weight of total responsibility can be immense and requires exceptional self-awareness and resilience.", "Requires extraordinary communication, negotiation, and conflict-resolution skills.", "The inherent power imbalance necessitates constant ethical consideration and vigilance against complacency or unintentional harm.", "Finding a partner truly suited for, desiring, and capable of thriving within such a deep and total level of power exchange."],
+        thrivesWith: ["A Slave, Submissive, or Thrall who deeply desires, understands, and enthusiastically consents to this level of structured, total power exchange.", "Meticulous, ongoing negotiation and codification of all aspects of the dynamic (e.g., via a 'contract' or living protocols).", "Unwavering commitment to open communication, regular feedback, and reassessment of the relationship's health and goals.", "A strong ethical compass, profound empathy, and an unshakeable commitment to the well-being, growth, and happiness of their partner."],
+        pathwaysToExploration: ["Engage in extensive, deep, and ongoing negotiation to create a 'contract,' set of protocols, or shared philosophy that outlines every facet of the dynamic.", "Develop rituals, routines, and forms of address that reinforce the roles, connection, and shared vision.", "Continuously educate oneself on ethical power exchange, communication, relationship psychology, and consent.", "Schedule regular 'out-of-dynamic' state-of-the-union check-ins to ensure ongoing consent, satisfaction, and mutual growth."]
+      },
+      Nurturer: {
+        title: "The Gentle Guardian: Nurturer", icon: "🤗",
+        flavorText: "In my care, you find your sanctuary; in my guidance, your spirit takes flight.",
+        essence: "The Nurturer blends control with profound empathy and a desire to foster growth and well-being. They create a dynamic where guidance feels like a warm embrace, and rules are rooted in care and understanding. This style is about providing a safe, supportive space for their partner to explore, heal, or simply be cherished and protected.",
+        coreMotivations: ["To provide a safe, loving, and supportive environment for their partner.", "To foster their partner's emotional, personal, or submissive growth through gentle guidance.", "To derive joy from caring for, protecting, and uplifting another.", "To build a dynamic based on deep trust, emotional intimacy, and mutual comfort."],
+        keyCharacteristics: ["Deeply empathetic, patient, and understanding.", "Prioritizes their partner's emotional well-being and safety.", "Guides with gentle firmness rather than harsh commands.", "Excellent listener and often provides wise counsel.", "Enjoys creating a comfortable, secure, and loving atmosphere."],
+        strengthsInDynamic: ["Creates an exceptionally safe space for vulnerability and emotional exploration.", "Ideal for partners who are new to BDSM, have past trauma, or thrive on gentle encouragement (e.g., Littles, Pets, sensitive Submissives).", "Builds profound emotional intimacy and trust.", "Can be incredibly healing and affirming for both partners."],
+        potentialChallenges: ["May sometimes struggle with setting firm boundaries if their partner pushes too far, due to inherent kindness.", "Can sometimes be perceived as 'too soft' by submissives seeking very strict discipline (unless that's also part of their range).", "Emotional labor can be high; Nurturer also needs self-care and support.", "Ensuring their own needs within the dynamic are also met and not constantly deferred."],
+        thrivesWith: ["Partners who crave emotional safety, gentle guidance, and a deeply caring connection (e.g., Littles, Pets, anxious or shy Submissives).", "Open communication about emotional needs and comfort levels.", "A partner who reciprocates care and appreciation in their own way.", "Dynamics where emotional connection and mutual well-being are paramount."],
+        pathwaysToExploration: ["Focus on creating comforting rituals and routines.", "Practice active listening and empathetic responses.", "Explore non-punitive forms of guidance and boundary setting (e.g., gentle reminders, positive reinforcement).", "Discuss what makes your partner feel most safe, cherished, and understood, and incorporate those elements regularly."]
+      },
+      Sadist: {
+        title: "The Artisan of Sensation: Sadist", icon: "😏",
+        flavorText: "In the crucible of sensation, where pleasure and pain dance, true connection is forged with exquisite care.",
+        essence: "The Sadist finds art, excitement, and a unique form of connection in the consensual, ethical, and skillful infliction of pain or intense psychological challenge. This is not about cruelty, but about understanding a partner's desires and limits, and orchestrating an experience that can be cathartic, euphoric, or deeply transformative for the Masochist. The ethical Sadist is a master of control, empathy, and sensation.",
+        coreMotivations: ["To explore the complex interplay of pain and pleasure in a consensual framework.", "To master the art and skill of various sensation-infliction techniques.", "To connect deeply with a Masochist through shared intensity and trust.", "To elicit powerful emotional and physical responses, leading to euphoria or catharsis for their partner."],
+        keyCharacteristics: ["Skillful and knowledgeable about various pain/sensation techniques and safety.", "Highly attuned to their Masochist's responses, limits, and desires.", "Employs control and precision in the application of stimuli.", "Values clear communication, consent, and safe words above all.", "Understands the importance of and provides thorough aftercare."],
+        strengthsInDynamic: ["Can provide incredibly intense, euphoric, and transformative experiences for a Masochist.", "Builds extreme levels of trust and intimacy through shared vulnerability and intensity.", "Often highly creative in designing scenes and experiences.", "Demonstrates profound control and understanding of their partner's psyche and physiology."],
+        potentialChallenges: ["Requires constant vigilance regarding safety and consent; the potential for harm is real if not ethical.", "Misunderstanding or misjudging a Masochist's limits can have serious consequences.", "Emotional intensity for both parties can be high; self-awareness and emotional regulation are key.", "Societal stigma or misunderstanding of consensual sadomasochism."],
+        thrivesWith: ["A Masochist who is communicative, knows their limits, and trusts them implicitly.", "Meticulous negotiation of limits, desired sensations, and safe words before any scene.", "A shared understanding of risk and a commitment to harm reduction.", "A deep respect for the Masochist's experience and a commitment to their well-being, especially through aftercare."],
+        pathwaysToExploration: ["Educate yourself continuously on safety, anatomy, different types of pain/sensation, and implement use.", "Start with less intense sensations and gradually escalate based on your partner's feedback and desire.", "Practice 'reading' your Masochist's verbal and non-verbal cues very carefully.", "Develop a comprehensive aftercare ritual that addresses both physical and emotional needs post-scene."]
+      },
+      Owner: {
+        title: "The Possessive Guardian: Owner", icon: "🔑",
+        flavorText: "Mine to cherish, mine to guide, mine to protect. In this bond, we both find our unique purpose.",
+        essence: "The Owner feels a deep sense of possession, responsibility, and often affection for their Pet or property (consensual). This style is about providing structure, care, training (if applicable), and a clear sense of belonging. The Owner takes pride in their Pet's well-being, behavior, and the unique bond they share, which can range from playful to deeply emotional and possessive.",
+        coreMotivations: ["To experience a deep sense of loving possession and responsibility for another.", "To provide care, guidance, and structure within a pet play or similar ownership dynamic.", "To take pride in their 'Pet's' happiness, obedience, and development.", "To enjoy a unique, often non-traditional, bond of loyalty and affection."],
+        keyCharacteristics: ["Possessive (in a caring, protective way), responsible, and often affectionate.", "Enjoys setting rules, providing 'training,' and establishing routines for their Pet.", "Takes pride in their Pet's appearance, behavior, and well-being.", "Values loyalty and a clear sense of their Pet 'belonging' to them.", "Often uses specific terms of endearment or ownership markers (e.g., collars)."],
+        strengthsInDynamic: ["Provides a strong sense of security, belonging, and purpose for the Pet.", "Can foster a very playful, affectionate, and unique bond.", "Excellent at providing structure and clear expectations, which many Pets thrive on.", "Often very attentive to their Pet's needs and moods."],
+        potentialChallenges: ["Ensuring 'possession' remains caring and respectful, not demeaning or overly controlling (unless specifically negotiated).", "Balancing the 'Pet' persona with the human needs of the partner.", "Communication can be complex if the Pet is primarily non-verbal in persona.", "Finding a partner who genuinely desires and thrives in an ownership dynamic."],
+        thrivesWith: ["A Pet (Puppy, Kitten, etc.) or property-style submissive who desires this specific kind of possessive, caring bond.", "Clear negotiation about the terms of 'ownership,' expectations, and treatment.", "Consistent affection, praise, and clear guidance/rules.", "A mutual enjoyment of the specific roles and the unique connection it fosters."],
+        pathwaysToExploration: ["Discuss and define what 'ownership' means to both of you in practical terms.", "Establish clear rules, routines, and 'training' goals if applicable (e.g., for a Puppy).", "Explore gear that signifies ownership and enhances the Pet persona (collars, tags, leashes).", "Practice different forms of affection, praise, and care that resonate with the Pet's persona and needs."]
+      },
       Dominant: {
         title: "The Confident Guide: Dominant", icon: "👤",
         flavorText: "With clarity of vision and strength of will, I shape our path, fostering trust in every step.",
@@ -615,188 +576,52 @@ Puppy: {
       }
     }; // End of this.styleDescriptions
 
-    this.dynamicMatches = {
-      // --- SUBMISSIVE STYLES ---
-      Brat: {
-        primary: { partnerStyle: "Disciplinarian", dynamicName: "The Spark & Steel Tango", description: "A spirited dance where the Brat's playful defiance meets the Disciplinarian's firm, loving guidance. This pairing thrives on witty banter, the thrill of the chase, and the eventual satisfaction of (consensual) 'taming'.", interactionFocus: ["Playful rule-testing and creative loopholes.", "Consistent, fair, and often 'fun' consequences.", "Underlying affection and mutual enjoyment of the game."] },
-        secondary: [{ partnerStyle: "Master", dynamicName: "The Impish Courtier", description: "A Master with patience and a sense of humor can find a Brat's antics an amusing challenge, channeling their energy into devoted (if cheeky) service." }, { partnerStyle: "Daddy", dynamicName: "The Cheeky Cherub", description: "A Daddy who enjoys playful challenges will find a Brat keeps them on their toes, blending mischief with underlying affection."}]
-      },
-      Little: {
-        primary: { partnerStyle: "Caretaker", dynamicName: "The Cozy Cocoon", description: "A deeply nurturing dynamic where the Little finds safety and joy in the Caretaker's gentle guidance and protection. It's a world of comfort, play, and affectionate bonding.", interactionFocus: ["Nurturing activities (e.g., story time, cuddles, preparing snacks).", "Reassurance, praise, and gentle guidance.", "Creating a safe space for innocent play and emotional expression."] },
-        secondary: [{ partnerStyle: "Daddy", dynamicName: "Daddy's Little Star", description: "A classic pairing focusing on protection, guidance, and often a blend of firm rules with abundant affection." }, { partnerStyle: "Mommy", dynamicName: "Mommy's Cherished One", description: "Similar to Daddy, emphasizing warmth, emotional support, and gentle instruction within a loving framework." }]
-      },
-      'Rope Bunny': {
-        primary: { partnerStyle: "Rigger", dynamicName: "The Woven Tapestry", description: "An intimate collaboration where the Rigger's skill and artistry meet the Rope Bunny's trust and physical form. This dynamic is a visual and sensory exploration, creating intricate patterns and profound connections.", interactionFocus: ["Aesthetic rope application and suspension (if desired/safe).", "Constant communication about sensation and comfort.", "Shared appreciation for the beauty and intensity of shibari."] },
-        secondary: [{ partnerStyle: "Sadist", dynamicName: "The Bound Sensation", description: "For Rope Bunnies who also enjoy pain, a Sadistic Rigger can incorporate impact or discomfort into the rope experience, heightening the intensity." }, { partnerStyle: "Puppeteer", dynamicName: "The Living Marionette", description: "A Puppeteer can use ropes to manipulate and pose the Rope Bunny, creating living art through controlled movement."}]
-      },
-      Masochist: {
-        primary: { partnerStyle: "Sadist", dynamicName: "The Symphony of Sensation", description: "A profound and trusting dynamic where the Sadist artfully orchestrates experiences of pain/intensity that the Masochist craves and transforms into pleasure or release. Communication and aftercare are paramount.", interactionFocus: ["Negotiated infliction of specific types of pain/sensation.", "Intense focus on the Masochist's responses and limits.", "Deep emotional connection forged through shared intensity and trust."] },
-        secondary: [{ partnerStyle: "Disciplinarian", dynamicName: "The Ordeal & Reward", description: "A Disciplinarian can use painful consequences (consensually) that a Masochist might find perversely rewarding or purifying." }, { partnerStyle: "Master", dynamicName: "The Enduring Devotion", description: "A Master might test a Masochistic Slave's limits as a form of devotion or trial, always with care." }]
-      },
-      Pet: {
-        primary: { partnerStyle: "Owner", dynamicName: "The Cherished Bond", description: "A loving and often playful dynamic where the Owner provides care, guidance, and a sense of belonging to their cherished Pet. Loyalty and affection are central.", interactionFocus: ["Establishing routines, 'training' (if desired), and clear expectations.", "Affection, praise, and play appropriate to the pet persona.", "Use of pet-like accessories and behaviors to enhance the role-play."] },
-        secondary: [{ partnerStyle: "Trainer", dynamicName: "The Eager Learner", description: "A Trainer can provide more structured guidance and skill development for a Pet, focusing on obedience and specific behaviors." }, { partnerStyle: "Caretaker", dynamicName: "The Pampered Companion", description: "A Caretaker can provide a very soft, nurturing environment for a Pet, focusing on comfort and affection." }]
-      },
-      Slave: {
-        primary: { partnerStyle: "Master", dynamicName: "The Sovereign & Steward Covenant", description: "A profound and deeply committed dynamic based on total trust, devotion, and a comprehensive exchange of power. The Master guides and shapes, while the Slave serves and finds fulfillment in their role.", interactionFocus: ["Establishing clear protocols, duties, and expectations.", "Ongoing communication and ethical considerations.", "Mutual dedication to the long-term vision of the dynamic."] },
-        secondary: [{ partnerStyle: "Mistress", dynamicName: "The Empress & Attendant", description: "Similar to Master/Slave, often with a particular aesthetic or focus on service to a powerful feminine authority." }, { partnerStyle: "Goddess", dynamicName: "The Divine & Worshipper", description: "A Slave may devote themselves to a Goddess figure, with service taking on a worshipful quality." }]
-      },
-      Submissive: {
-        primary: { partnerStyle: "Dominant", dynamicName: "The Harmonious Exchange", description: "A foundational BDSM pairing where the Submissive's desire to yield and please meets the Dominant's desire to lead and guide. Trust and communication form the bedrock.", interactionFocus: ["Clear direction from the Dominant and willing obedience from the Submissive.", "Mutual exploration of desires and limits.", "Building intimacy through power exchange and shared vulnerability."] },
-        secondary: [{ partnerStyle: "Sir", dynamicName: "The Honored Allegiance", description: "A Submissive may find deep satisfaction in serving a Sir, embodying respect, formality, and dutiful obedience." }, { partnerStyle: "Protector", dynamicName: "The Sheltered Heart", description: "A Submissive seeking safety and gentle guidance thrives under a Protector's watchful care." }]
-      },
-      Switch: {
-        primary: { partnerStyle: "Switch", dynamicName: "The Endless Waltz", description: "Two adaptable souls exploring the full spectrum of power. This dynamic is characterized by its fluidity, mutual understanding, and the exciting unpredictability of who might lead or follow.", interactionFocus: ["Clear communication of desires to switch roles.", "Embracing spontaneity and shared creativity.", "Appreciation for both dominant and submissive perspectives."] },
-        secondary: [{ partnerStyle: "Dominant", dynamicName: "The Versatile Vessel", description: "When the Switch leans submissive, a Dominant can enjoy their adaptability and understanding of power." }, { partnerStyle: "Submissive", dynamicName: "The Empathetic Guide", description: "When the Switch leans dominant, a Submissive can benefit from their unique insight and ability to anticipate needs." }]
-      },
-      Puppy: {
-        primary: { partnerStyle: "Owner", dynamicName: "The Alpha & Adoring Pup", description: "The Owner provides the structure, affection, and guidance a playful Puppy craves, fostering loyalty and energetic companionship.", interactionFocus: ["Positive reinforcement training for 'tricks' and obedience.", "Energetic play, 'walkies,' and lots of petting/praise.", "Clear rules and routines combined with loving care."] },
-        secondary: [{ partnerStyle: "Trainer", dynamicName: "The Master & Eager Disciple", description: "A more focused dynamic on skill development and obedience, where the Puppy strives to please a dedicated Trainer." }, { partnerStyle: "Playmate", dynamicName: "The Romping Packmates", description: "Two playful energies meet, perhaps one more guiding, but the focus is on shared fun and puppyish antics." }]
-      },
-      Kitten: {
-        primary: { partnerStyle: "Owner", dynamicName: "The Warm Lap & Indulgent Hand", description: "The Owner provides comfort, affection (often on the Kitten's terms), and an engaging environment for the sensual and sometimes mischievous Kitten.", interactionFocus: ["Gentle petting, grooming, and providing comfortable 'napping' spots.", "Engaging in playful 'hunting' games with toys.", "Understanding and appreciating the Kitten's need for both affection and independence."] },
-        secondary: [{ partnerStyle: "Nurturer", dynamicName: "The Pampered Feline", description: "A Nurturer can provide an exceptionally comforting and indulgent environment for a Kitten, focusing on their sensory pleasure and emotional well-being." }, { partnerStyle: "Mistress", dynamicName: "The Elegant Familiar", description: "A sophisticated Mistress might enjoy a graceful, intelligent Kitten as a companion, appreciating their beauty and subtle wiles." }]
-      },
-      Princess: {
-        primary: { partnerStyle: "Daddy", dynamicName: "Daddy's Spoiled Darling", description: "The Daddy indulges and pampers his Princess, providing adoration, luxurious comforts, and gentle guidance, while she revels in being cherished.", interactionFocus: ["Lavishing praise, gifts, and attention.", "Catering to her desires for comfort and beauty.", "Setting gentle but firm boundaries within a loving, indulgent framework."] },
-        secondary: [{ partnerStyle: "Master", dynamicName: "The Royal & Her Chamberlain", description: "A Master with a taste for the finer things might enjoy a Princess's company, expecting refined behavior in return for lavish treatment." }, { partnerStyle: "Caretaker", dynamicName: "The Pampered Jewel", description: "A Caretaker can focus on providing ultimate comfort and fulfilling every (reasonable) whim of the Princess." }]
-      },
-      Prey: {
-        primary: { partnerStyle: "Hunter", dynamicName: "The Primal Dance of Pursuit", description: "An exhilarating game of cat-and-mouse where the Hunter's skill in strategy and suspense meets the Prey's thrill in evasion and eventual (consensual) capture.", interactionFocus: ["Building suspense and a sense of (safe) danger through the chase.", "Strategic use of environment and psychological tactics.", "The intense release and connection upon 'capture,' respecting all limits."] },
-        secondary: [{ partnerStyle: "Sadist", dynamicName: "The Hunted Quarry's Ordeal", description: "A Sadist might incorporate the chase as a prelude to intense sensation play upon capture, heightening the Prey's anticipation and vulnerability." }, { partnerStyle: "Commander", dynamicName: "The Fugitive & The Taskmaster", description: "A Commander might set up an elaborate 'escape and evasion' scenario, testing the Prey's skills against their strategic pursuit." }]
-      },
-      Toy: {
-        primary: { partnerStyle: "Owner", dynamicName: "The Collector & Cherished Plaything", description: "The Owner delights in their adaptable Toy, using them for amusement, pleasure, or creative expression, while the Toy revels in being the focus of such attention and fulfilling desires.", interactionFocus: ["Directing the Toy in various scenarios, poses, or activities.", "Appreciating the Toy's responsiveness and willingness to be 'used'.", "Balancing objectification with care and ensuring the Toy's enjoyment."] },
-        secondary: [{ partnerStyle: "Puppeteer", dynamicName: "The Animated Creation", description: "A Puppeteer can take great joy in the Toy's adaptability, manipulating them in intricate and creative ways." }, { partnerStyle: "Sadist", dynamicName: "The Resilient Implement", description: "A Toy with masochistic tendencies can become a focus for a Sadist's attentions, enduring and responding as directed." }]
-      },
-      Doll: {
-        primary: { partnerStyle: "Puppeteer", dynamicName: "The Artisan & Living Sculpture", description: "The Puppeteer meticulously shapes, poses, and adorns the Doll, transforming them into a perfect, still work of art, while the Doll finds fulfillment in embodying this aesthetic vision.", interactionFocus: ["Precise posing, dressing, and aesthetic arrangement of the Doll.", "Extended periods of stillness and embodying a specific look or persona.", "A deep, often non-verbal, connection based on shared artistic intent."] },
-        secondary: [{ partnerStyle: "Owner", dynamicName: "The Collector's Prize", description: "An Owner with a strong aesthetic sense might cherish a Doll as a beautiful, prized possession to be admired and perfectly maintained." }, { partnerStyle: "Mistress", dynamicName: "The Perfect Attendant", description: "A Mistress might desire a Doll as a silent, beautiful fixture or attendant, embodying grace and stillness." }]
-      },
-      Bunny: {
-        primary: { partnerStyle: "Caretaker", dynamicName: "The Gentle Hand & Timid Heart", description: "The Caretaker provides a safe, comforting, and reassuring environment for the gentle and often shy Bunny, who thrives on soft affection and quiet companionship.", interactionFocus: ["Providing a calm, secure 'burrow' or safe space.", "Offering gentle pets, soft words, and patient affection.", "Engaging in quiet, non-threatening play and companionship."] },
-        secondary: [{ partnerStyle: "Nurturer", dynamicName: "The Sheltered Innocent", description: "A Nurturer can create an ideal haven for a Bunny, focusing on their emotional well-being and providing abundant gentle care." }, { partnerStyle: "Protector", dynamicName: "The Shielded Warren", description: "A Protector can make a Bunny feel exceptionally safe from the 'scary world,' allowing them to relax and be their gentle selves." }]
-      },
-      Servant: {
-        primary: { partnerStyle: "Master", dynamicName: "The Lord/Lady & Loyal Steward", description: "The Master/Mistress relies on the Servant's diligent, polite, and anticipatory service, while the Servant finds honor and purpose in maintaining order and fulfilling duties impeccably.", interactionFocus: ["Clear delegation of tasks and expectations for high standards of service.", "Formal protocols, respectful address, and efficient execution of duties.", "Mutual respect based on clearly defined roles and responsibilities."] },
-        secondary: [{ partnerStyle: "Mistress", dynamicName: "The Lady & Her Attendant", description: "Focuses on refined service, discretion, and upholding the elegant standards of the Mistress's domain." }, { partnerStyle: "Sir", dynamicName: "The Knight & His Squire", description: "A dynamic of formal, honorable service to a respected figure of authority, emphasizing duty and loyalty." }]
-      },
-      Playmate: {
-        primary: { partnerStyle: "Playmate", dynamicName: "The Dynamic Duo of Delight", description: "Two energetic and creative souls dedicated to mutual fun, adventure, and shared laughter, exploring kinks and scenarios with enthusiasm and a light heart.", interactionFocus: ["Brainstorming and engaging in new, exciting activities or scenes together.", "Prioritizing mutual enjoyment, laughter, and positive energy.", "Flexible roles and a spirit of 'let's try it!' exploration."] },
-        secondary: [{ partnerStyle: "Switch", dynamicName: "The Ever-Changing Game", description: "A Switch can be an ideal Playmate, bringing versatility and a willingness to explore different roles within the fun." }, { partnerStyle: "Assertive", dynamicName: "The Adventure Leader & Eager Cohort", description: "An Assertive Dominant might lead the adventures, with the Playmate bringing enthusiasm and creative ideas to the execution." }]
-      },
-      Babygirl: {
-        primary: { partnerStyle: "Daddy", dynamicName: "Daddy's Little Princess/Sweetheart", description: "The Daddy provides a loving, firm, and nurturing hand for his Babygirl, who thrives on affection, guidance, and feeling cherished and a bit spoiled.", interactionFocus: ["Setting loving rules and providing gentle discipline/guidance.", "Offering abundant affection, praise, and reassurance.", "Indulging her with 'cute' things, special treats, and feeling like the center of his world."] },
-        secondary: [{ partnerStyle: "Mommy", dynamicName: "Mommy's Precious Angel", description: "Similar to Daddy, with a focus on maternal warmth, emotional comfort, and gentle nurturing of the Babygirl." }, { partnerStyle: "Caretaker", dynamicName: "The Cherished Innocent", description: "A Caretaker can provide a very soft, indulgent environment, focusing on the Babygirl's comfort and happiness." }]
-      },
-      Captive: {
-        primary: { partnerStyle: "Hunter", dynamicName: "The Unrelenting Pursuit & Final Surrender", description: "The Hunter orchestrates a thrilling (consensual) scenario of pursuit and confinement, while the Captive experiences the intense psychological drama of helplessness and yielding to a superior force.", interactionFocus: ["Elaborate scenarios of chase, evasion, and eventual capture.", "Psychological play involving interrogation, tests of will, or 'breaking' the Captive (consensually).", "Intense focus on safety, trust, and the cathartic release for the Captive."] },
-        secondary: [{ partnerStyle: "Master", dynamicName: "The Rebel & The Sovereign's Justice", description: "A Master might capture a 'rebellious' subject, with the captivity focusing on restoring order and obedience through structured means." }, { partnerStyle: "Commander", dynamicName: "The POW & The Interrogator", description: "A Commander might run a 'prisoner of war' scenario, focusing on strategic interrogation and information extraction (all role-play)." }]
-      },
-      Thrall: {
-        primary: { partnerStyle: "Goddess", dynamicName: "The Divine Presence & Devoted Oracle", description: "The Goddess embodies supreme power and inspires awe, while the Thrall offers absolute devotion, worship, and service, finding ultimate purpose in this transcendent connection.", interactionFocus: ["Rituals of worship, offerings, and acts of profound, selfless service.", "The Thrall's complete surrender of will to the Goddess's divine desires.", "A dynamic often imbued with spiritual or mystical significance for both."] },
-        secondary: [{ partnerStyle: "Master", dynamicName: "The Absolute Sovereign & Bound Soul", description: "A Master seeking total, unwavering devotion finds a perfect counterpart in a Thrall who desires to live solely for their Master's will." }, { partnerStyle: "Puppeteer", dynamicName: "The Mind Unbound, The Body Enslaved", description: "A Puppeteer might find a Thrall the ultimate subject for complete psychological and physical direction, an extension of their very being." }]
-      },
-      Puppet: {
-        primary: { partnerStyle: "Puppeteer", dynamicName: "The Maestro & The Marionette", description: "The Puppeteer skillfully directs every action and response of the Puppet, who finds joy in perfect, unthinking obedience and becoming a flawless instrument of another's will.", interactionFocus: ["Precise, often non-verbal, commands and immediate, exact responses from the Puppet.", "Creative scenarios where the Puppet is manipulated, posed, or made to perform intricate tasks.", "Exploration of agency, control, and the beauty of responsive motion."] },
-        secondary: [{ partnerStyle: "Master", dynamicName: "The Creator & His Automaton", description: "A Master might 'program' a Puppet with specific behaviors and responses, enjoying the perfection of their animated creation." }, { partnerStyle: "Rigger", dynamicName: "The Suspended Dancer", description: "A Rigger can use ropes not just for bondage but to manipulate a Puppet's body like a marionette, creating living, controlled art." }]
-      },
-      Maid: {
-        primary: { partnerStyle: "Mistress", dynamicName: "The Lady of the Manor & Her Impeccable Attendant", description: "The Mistress enjoys an environment of perfect order and refined service provided by her diligent Maid, who takes pride in upholding the highest standards of domestic elegance.", interactionFocus: ["Maintaining pristine cleanliness, order, and aesthetic appeal.", "Courteous, discreet, and anticipatory service according to the Mistress's preferences.", "A formal or semi-formal dynamic emphasizing respect and flawless execution of duties."] },
-        secondary: [{ partnerStyle: "Master", dynamicName: "The Head of Household & Chief Domestic", description: "Similar to Mistress, focusing on the efficient and perfect running of the Master's domain." }, { partnerStyle: "Sir", dynamicName: "The Gentleman & His Valet/Housekeeper", description: "A more formal, traditional service role, emphasizing respect, discretion, and impeccable standards." }]
-      },
-      Painslut: {
-        primary: { partnerStyle: "Sadist", dynamicName: "The Forge of Ecstasy", description: "The Sadist delivers the intense, often extreme, sensations the Painslut craves, pushing boundaries safely while the Painslut revels in the raw, unadulterated physical input.", interactionFocus: ["Open and enthusiastic requests for 'more' or specific intense sensations from the Painslut.", "Skillful, safe delivery of extreme (but consensual) pain by the Sadist.", "A highly energetic, often performative, exchange of intense physical stimuli and response."] },
-        secondary: [{ partnerStyle: "Master", dynamicName: "The Trial by Fire", description: "A Master might test a Painslut's endurance and devotion through intense, painful ordeals, always with underlying care (if ethical)." }, { partnerStyle: "Hunter", dynamicName: "The Cornered Beast's Defiance", description: "Upon capture, a Painslut Prey might 'defiantly' demand or endure intense treatment from the Hunter." }]
-      },
-      Bottom: {
-        primary: { partnerStyle: "Dominant", dynamicName: "The Sculptor & The Clay", description: "The Dominant shapes the experience, and the Bottom skillfully receives, endures, and transforms that input, whether it's sensation, instruction, or emotional energy.", interactionFocus: ["The Dominant's clear delivery of action/stimulus.", "The Bottom's receptive endurance and processing of the experience.", "Mutual trust and communication to ensure the experience is satisfying and within limits."] },
-        secondary: [{ partnerStyle: "Sadist", dynamicName: "The Canvas of Sensation", description: "A Sadist can explore a wide range of sensations on a willing and receptive Bottom." }, { partnerStyle: "Rigger", dynamicName: "The Bound Form", description: "A Rigger works with the Bottom's body, who receives the pressure and confinement of the ropes." }]
-      },
-
-      // --- DOMINANT STYLES ---
-      Disciplinarian: {
-        primary: { partnerStyle: "Brat", dynamicName: "The Order & Mischief Duet", description: "A classic and engaging pairing where the Disciplinarian's love for order and rules meets the Brat's love for playfully testing them. Success lies in mutual enjoyment of the 'game' and clear communication.", interactionFocus: ["Setting clear, understandable rules and consequences.", "Consistent and fair application of discipline.", "Enjoyment of playful defiance and the process of 'taming'."] },
-        secondary: [{ partnerStyle: "Slave", dynamicName: "The Structured Devotion", description: "A Slave who thrives on clear protocols and guidance can find deep satisfaction with a fair and consistent Disciplinarian." }, { partnerStyle: "Pet", dynamicName: "The Guided Companion", description: "For Pets who require training or clear behavioral expectations, a Disciplinarian can provide a firm yet caring framework." }]
-      },
-      Master: {
-        primary: { partnerStyle: "Slave", dynamicName: "The Sovereign & Steward Covenant", description: "A profound and deeply committed dynamic based on total trust, devotion, and a comprehensive exchange of power. The Master guides and shapes, while the Slave serves and finds fulfillment in their role.", interactionFocus: ["Establishing clear protocols, duties, and expectations.", "Ongoing communication and ethical considerations.", "Mutual dedication to the long-term vision of the dynamic."] },
-        secondary: [{ partnerStyle: "Thrall", dynamicName: "The Divine & Devotee", description: "For Masters who embody a more 'god-like' or worshiped persona, a Thrall's deep, reverent submission is a natural fit." }, { partnerStyle: "Submissive", dynamicName: "The Mentor & Protégé", description: "A highly structured Submissive seeking deep guidance and a defined role can flourish under a Master's tutelage." }]
-      },
-      Nurturer: {
-        primary: { partnerStyle: "Little", dynamicName: "The Hearth & Heart", description: "A deeply caring dynamic where the Nurturer provides a safe, loving space for the Little to explore their innocence and playfulness. Emotional connection is key.", interactionFocus: ["Providing comfort, reassurance, and gentle guidance.", "Engaging in age-appropriate play and activities.", "Fostering emotional security and a sense of being cherished."] },
-        secondary: [{ partnerStyle: "Pet", dynamicName: "The Gentle Hand & Happy Paws", description: "A Nurturer can provide immense comfort and affection to a Pet, focusing on their well-being and happiness." }, { partnerStyle: "Submissive", dynamicName: "The Kindred Spirit", description: "A Submissive who values emotional connection and gentle guidance will thrive with a Nurturer." }]
-      },
-      Sadist: {
-        primary: { partnerStyle: "Masochist", dynamicName: "The Alchemist's Fire", description: "A symbiotic relationship where the Sadist's skill in delivering sensation meets the Masochist's desire to receive and transform it. Trust, communication, and aftercare are vital pillars.", interactionFocus: ["Careful negotiation and application of desired sensations/pain.", "Intense focus on the Masochist's physical and emotional responses.", "Shared journey into heightened states of consciousness or euphoria."] },
-        secondary: [{ partnerStyle: "Painslut", dynamicName: "The Unflinching Test", description: "A Painslut's craving for intense experiences provides a fertile ground for a Sadist's explorations, always within ethical boundaries." }, { partnerStyle: "Bottom", dynamicName: "The Enduring Canvas", description: "A Bottom with masochistic tendencies can engage with a Sadist in scenes focused on endurance and intense sensation." }]
-      },
-      Owner: {
-        primary: { partnerStyle: "Pet", dynamicName: "The Alpha & Omega Pack", description: "A dynamic rooted in affectionate possession and care, where the Owner guides, trains, and cherishes their Pet, who in turn offers loyalty and playful companionship.", interactionFocus: ["Establishing clear rules, routines, and 'training' if desired.", "Providing consistent affection, praise, and care.", "Enjoying the unique bond and persona-based interactions."] },
-        secondary: [{ partnerStyle: "Puppy", dynamicName: "The Lead & The Leash", description: "An Owner provides the structure and affection a playful Puppy craves." }, { partnerStyle: "Kitten", dynamicName: "The Warm Lap & Contented Purr", description: "An Owner indulges a Kitten's desire for comfort, play, and attention on their terms." }]
-      },
-      Dominant: {
-        primary: { partnerStyle: "Submissive", dynamicName: "The Architect & The Foundation", description: "The Dominant provides the vision and direction, while the Submissive offers the trust and willingness to build upon that foundation, creating a balanced and respectful power exchange.", interactionFocus: ["Clear communication of desires and boundaries from both.", "The Dominant taking initiative and responsibility for the scene/dynamic.", "The Submissive's active and engaged yielding to guidance."] },
-        secondary: [{ partnerStyle: "Bottom", dynamicName: "The Director & The Performer", description: "A Dominant can direct a Bottom through various experiences, relying on their receptiveness and endurance." }, { partnerStyle: "Switch", dynamicName: "The Anchor & The Current", description: "A Dominant can provide a stable point of authority for a Switch who is currently exploring their submissive side." }]
-      },
-      Assertive: {
-        primary: { partnerStyle: "Brat", dynamicName: "The Unstoppable Force & The Audacious Spark", description: "The Assertive Dominant's bold energy meets the Brat's challenge head-on, creating a high-energy dynamic of playful power struggles and exciting confrontations.", interactionFocus: ["Direct and confident commands meeting playful defiance.", "A fast-paced interplay of testing limits and establishing authority.", "Mutual enjoyment of a spirited, no-holds-barred (but consensual) engagement."] },
-        secondary: [{ partnerStyle: "Masochist", dynamicName: "The Overwhelming Tide & The Ecstatic Surrender", description: "An Assertive Sadist can provide the intense, forceful delivery of sensation that some Masochists crave." }, { partnerStyle: "Prey", dynamicName: "The Relentless Predator & The Thrilled Quarry", description: "An Assertive Hunter makes for a terrifyingly exciting chase, pushing the Prey's limits of evasion and anticipation." }]
-      },
-      Strict: {
-        primary: { partnerStyle: "Slave", dynamicName: "The Lawgiver & The Devoted Adherent", description: "The Strict Dominant's love for order and precision is perfectly met by the Slave's desire for clear protocols and unwavering adherence to a defined structure.", interactionFocus: ["Meticulous rule-setting and expectation of flawless obedience.", "Formal protocols, consistent schedules, and detailed task management.", "A shared appreciation for order, discipline, and perfection in execution."] },
-        secondary: [{ partnerStyle: "Servant", dynamicName: "The Head of Protocol & The Impeccable Aide", description: "A Strict Master/Mistress will appreciate a Servant's dedication to upholding exacting standards of service and household management." }, { partnerStyle: "Maid", dynamicName: "The Overseer of Perfection & The Polished Gem", description: "A Strict household benefits from a Maid's dedication to spotless environments and flawless service." }]
-      },
-      Mistress: {
-        primary: { partnerStyle: "Servant", dynamicName: "The Divine & Her Devoted Chamberlain", description: "The Mistress's regal bearing and desire for refined service are perfectly complemented by the Servant's dedication to anticipating her needs and upholding her elegant standards.", interactionFocus: ["Expectation of sophisticated, anticipatory service and aesthetic presentation.", "Creative and often whimsical demands met with skill and grace.", "A dynamic of adoration, refined power, and exquisite attention to detail."] },
-        secondary: [{ partnerStyle: "Slave", dynamicName: "The Empress & Her Bound Subject", description: "A Slave's total devotion can be directed towards fulfilling the grand and often artistic visions of a powerful Mistress." }, { partnerStyle: "Toy", dynamicName: "The Muse & Her Plaything", description: "A creative Mistress can use an adaptable Toy for elaborate scenes, aesthetic displays, or sensual amusement." }]
-      },
-      Daddy: {
-        primary: { partnerStyle: "Little", dynamicName: "Daddy's Cherished Innocent", description: "The Daddy provides a secure, loving, and structured environment where his Little can safely explore their innocence, playfulness, and need for paternal guidance and affection.", interactionFocus: ["Setting clear, loving rules and providing gentle but firm discipline.", "Abundant affection, praise, and activities that nurture the Little's spirit.", "A strong sense of protection, responsibility, and tender care from the Daddy."] },
-        secondary: [{ partnerStyle: "Babygirl", dynamicName: "Daddy's Spoiled Sweetheart", description: "Similar to Little, but perhaps with more emphasis on being 'spoiled' and a slightly older 'young' persona." }, { partnerStyle: "Pet", dynamicName: "The Kind Master & His Adored Companion", description: "A Daddy's nurturing and guiding nature can extend well to a Pet who craves affection and clear boundaries." }]
-      },
-      Mommy: {
-        primary: { partnerStyle: "Little", dynamicName: "Mommy's Precious Lamb", description: "The Mommy offers a haven of warmth, emotional support, and gentle guidance, allowing her Little to feel unconditionally loved, safe, and free to be their playful, innocent self.", interactionFocus: ["Constant reassurance, comfort, and tender affection.", "Engaging in nurturing activities and providing a soft place to fall.", "Gentle guidance on behavior and emotional expression, always rooted in love."] },
-        secondary: [{ partnerStyle: "Babygirl", dynamicName: "Mommy's Darling Angel", description: "A Mommy can provide the deep emotional comfort and nurturing affection a Babygirl often seeks." }, { partnerStyle: "Bunny", dynamicName: "The Gentle Gardener & Her Timid Flower", description: "A Mommy's soft, patient approach is ideal for a shy Bunny, helping them feel secure and cherished." }]
-      },
-      Rigger: {
-        primary: { partnerStyle: "Rope Bunny", dynamicName: "The Weaver & The Woven", description: "A symbiotic dance of art and trust, where the Rigger's technical skill and aesthetic vision meet the Rope Bunny's willingness to become a living canvas for intricate ropework.", interactionFocus: ["Meticulous application of rope, focusing on safety, aesthetics, and sensation.", "Constant communication and feedback between Rigger and Rope Bunny.", "Shared appreciation for the beauty, intensity, and unique connection forged through rope."] },
-        secondary: [{ partnerStyle: "Masochist", dynamicName: "The Sculptor of Sensation", description: "A Rigger can incorporate constrictive or pressure-based pain into their ties for a Masochistic Rope Bunny, layering sensations." }, { partnerStyle: "Captive", dynamicName: "The Unbreakable Bonds", description: "A Rigger can create elaborate and inescapable (but safe) bonds as part of a Captivity scenario, enhancing the feeling of helplessness." }]
-      },
-      Hunter: {
-        primary: { partnerStyle: "Prey", dynamicName: "The Eternal Chase", description: "An adrenaline-fueled dynamic where the Hunter's strategic pursuit and the Prey's thrilling evasion create a primal dance of (consensual) fear, excitement, and eventual surrender.", interactionFocus: ["Building suspense and an atmosphere of thrilling (safe) danger.", "Strategic use of environment, stealth, and psychological tactics.", "The intense climax of 'capture' and the subsequent shift in power/dynamics."] },
-        secondary: [{ partnerStyle: "Captive", dynamicName: "The Quarry Cornered", description: "The Hunter's skills are perfectly suited to scenarios leading to the 'capture' and confinement of a willing Captive." }, { partnerStyle: "Brat", dynamicName: "The Elusive Challenge", description: "A Brat who enjoys being 'chased down' and 'tamed' can provide an interesting twist to the Hunter/Prey dynamic, adding wit to the evasion." }]
-      },
-      Trainer: {
-        primary: { partnerStyle: "Puppy", dynamicName: "The Guide & The Eager Student", description: "The Trainer's patience and clear methodology help the enthusiastic Puppy learn desired behaviors and tricks, fostering a bond of achievement and affectionate discipline.", interactionFocus: ["Clear, consistent commands and positive reinforcement techniques.", "Structured 'training sessions' focusing on specific skills or obedience.", "Celebrating progress and building the Puppy's confidence and discipline."] },
-        secondary: [{ partnerStyle: "Pet", dynamicName: "The Mentor & The Companion", description: "A Trainer can work with any Pet persona, shaping behaviors and strengthening the bond through structured interaction and clear expectations." }, { partnerStyle: "Slave", dynamicName: "The Taskmaster & The Apprentice", description: "A Trainer can teach a Slave specific skills or protocols, focusing on precision and mastery through disciplined practice." }]
-      },
-      Puppeteer: {
-        primary: { partnerStyle: "Puppet", dynamicName: "The Mind's Eye & The Mirrored Form", description: "An intricate dance of will and response, where the Puppeteer's subtle (or overt) direction is flawlessly enacted by the Puppet, creating a mesmerizing display of control and yielding.", interactionFocus: ["Issuing precise commands (verbal, non-verbal, or even 'telepathic').", "The Puppet's immediate and exact replication of the Puppeteer's intent.", "Exploration of themes of agency, automation, and the beauty of perfect, responsive obedience."] },
-        secondary: [{ partnerStyle: "Doll", dynamicName: "The Animator & The Exquisite Automaton", description: "A Puppeteer can 'animate' a Doll, directing their movements, expressions, and creating living art from a still form." }, { partnerStyle: "Toy", dynamicName: "The Programmer & The Interactive Device", description: "A Puppeteer can 'program' a Toy with specific responses or functions, enjoying the creative control over their 'living device'." }]
-      },
-      Protector: {
-        primary: { partnerStyle: "Little", dynamicName: "The Fortress & The Sheltered Bloom", description: "The Protector creates an unwavering shield of safety and security around their Little, allowing them to explore their innocence and vulnerability without fear.", interactionFocus: ["Vigilant awareness and proactive measures to ensure the Little's physical and emotional safety.", "Providing a constant source of strength, reassurance, and comfort.", "Defending the Little from any perceived harm or distress."] },
-        secondary: [{ partnerStyle: "Bunny", dynamicName: "The Guardian & The Gentle Heart", description: "A Protector's steadfast presence can be immensely comforting to a timid Bunny, creating a safe space for them to emerge." }, { partnerStyle: "Submissive", dynamicName: "The Sentinel & The Trusting Soul", description: "A Submissive who feels particularly vulnerable or anxious can find deep solace in a Protector's unwavering care." }]
-      },
-      Caretaker: {
-        primary: { partnerStyle: "Little", dynamicName: "The Warm Hearth & The Contented Child", description: "The Caretaker provides comprehensive emotional and physical comfort, tending to the Little's needs with patience, empathy, and unwavering affection.", interactionFocus: ["Anticipating and meeting the Little's needs for comfort, nourishment, and gentle play.", "Creating a soothing, predictable, and loving environment.", "Providing a constant source of emotional support and understanding."] },
-        secondary: [{ partnerStyle: "Pet", dynamicName: "The Gentle Groomer & The Pampered Friend", description: "A Caretaker can lavish a Pet with attention, comfort, and all the gentle ministrations they desire." }, { partnerStyle: "Babygirl", dynamicName: "The Soothing Presence & The Cherished One", description: "A Caretaker excels at providing the consistent affection, reassurance, and nurturing environment a Babygirl often craves." }]
-      },
-      Sir: {
-        primary: { partnerStyle: "Submissive", dynamicName: "The Commander & The Loyal Officer", description: "Sir's honorable and principled leadership inspires deep respect and dutiful obedience from a Submissive who values formality, integrity, and clear direction.", interactionFocus: ["Formal address, clear protocols, and expectations of respectful conduct.", "Commands delivered with calm authority and an expectation of precise execution.", "A dynamic built on mutual respect for established hierarchy and principles."] },
-        secondary: [{ partnerStyle: "Servant", dynamicName: "The Lord of the Estate & The Head Steward", description: "A Sir's expectation of order and propriety is well met by a Servant dedicated to upholding high standards with honor." }, { partnerStyle: "Maid", dynamicName: "The Gentleman of the House & The Discreet Housekeeper", description: "A Sir can rely on a Maid to maintain his environment with quiet efficiency and respectful decorum." }]
-      },
-      Goddess: {
-        primary: { partnerStyle: "Thrall", dynamicName: "The Divine Sun & The Reflecting Moon", description: "The Goddess's radiant power and otherworldly aura inspire absolute devotion and worship from the Thrall, who finds ultimate purpose in serving and reflecting Her divine will.", interactionFocus: ["Elaborate rituals of worship, offerings, and acts of profound, selfless service.", "The Thrall's complete immersion in the Goddess's desires and pronouncements.", "A transcendent connection that often blurs the lines between the mundane and the mystical."] },
-        secondary: [{ partnerStyle: "Slave", dynamicName: "The Celestial Queen & Her Earthly Devotee", description: "A Slave can offer profound, life-encompassing service to a Goddess, dedicating their existence to Her glory." }, { partnerStyle: "Masochist", dynamicName: "The Ordeal of a Deity & The Ecstatic Acolyte", description: "A Goddess might demand trials of endurance or painful offerings from a Masochistic worshipper as a test of faith or path to enlightenment." }]
-      },
-      Commander: {
-        primary: { partnerStyle: "Submissive", dynamicName: "The General & The Elite Trooper", description: "The Commander's strategic brilliance and decisive leadership are met with the Submissive's disciplined obedience and trust, allowing for the efficient execution of complex 'missions'.", interactionFocus: ["Clear articulation of objectives, strategies, and tactical orders.", "Expectation of swift, precise, and unquestioning execution of commands from subordinates.", "A focus on teamwork, discipline, and achieving shared (Commander-defined) goals."] },
-        secondary: [{ partnerStyle: "Slave", dynamicName: "The Warlord & The Unwavering Legionnaire", description: "A Commander can utilize a Slave's deep obedience for intricate, demanding tasks or 'campaigns'." }, { partnerStyle: "Switch", dynamicName: "The Field Marshal & The Versatile Agent", description: "A Switch can serve as a highly adaptable operative for a Commander, capable of fulfilling various roles within a strategic plan." }]
-      }
-    }; // End of this.dynamicMatches
-
+    this.dynamicMatches = { /* ... ALL fully fleshed-out dynamic matches (as provided in the previous FULL script for this) ... */
+      Brat: {primary: { partnerStyle: "Disciplinarian", dynamicName: "The Spark & Steel Tango", description: "A spirited dance where the Brat's playful defiance meets the Disciplinarian's firm, loving guidance. This pairing thrives on witty banter, the thrill of the chase, and the eventual satisfaction of (consensual) 'taming'.", interactionFocus: ["Playful rule-testing and creative loopholes.", "Consistent, fair, and often 'fun' consequences.", "Underlying affection and mutual enjoyment of the game."] }, secondary: [{ partnerStyle: "Master", dynamicName: "The Impish Courtier", description: "A Master with patience and a sense of humor can find a Brat's antics an amusing challenge, channeling their energy into devoted (if cheeky) service." }, { partnerStyle: "Daddy", dynamicName: "The Cheeky Cherub", description: "A Daddy who enjoys playful challenges will find a Brat keeps them on their toes, blending mischief with underlying affection."}]},
+      Little: {primary: { partnerStyle: "Caretaker", dynamicName: "The Cozy Cocoon", description: "A deeply nurturing dynamic where the Little finds safety and joy in the Caretaker's gentle guidance and protection. It's a world of comfort, play, and affectionate bonding.", interactionFocus: ["Nurturing activities (e.g., story time, cuddles, preparing snacks).", "Reassurance, praise, and gentle guidance.", "Creating a safe space for innocent play and emotional expression."] }, secondary: [{ partnerStyle: "Daddy", dynamicName: "Daddy's Little Star", description: "A classic pairing focusing on protection, guidance, and often a blend of firm rules with abundant affection." }, { partnerStyle: "Mommy", dynamicName: "Mommy's Cherished One", description: "Similar to Daddy, emphasizing warmth, emotional support, and gentle instruction within a loving framework." }]},
+      'Rope Bunny': {primary: { partnerStyle: "Rigger", dynamicName: "The Woven Tapestry", description: "An intimate collaboration where the Rigger's skill and artistry meet the Rope Bunny's trust and physical form. This dynamic is a visual and sensory exploration, creating intricate patterns and profound connections.", interactionFocus: ["Aesthetic rope application and suspension (if desired/safe).", "Constant communication about sensation and comfort.", "Shared appreciation for the beauty and intensity of shibari."] }, secondary: [{ partnerStyle: "Sadist", dynamicName: "The Bound Sensation", description: "For Rope Bunnies who also enjoy pain, a Sadistic Rigger can incorporate impact or discomfort into the rope experience, heightening the intensity." }, { partnerStyle: "Puppeteer", dynamicName: "The Living Marionette", description: "A Puppeteer can use ropes to manipulate and pose the Rope Bunny, creating living art through controlled movement."}]},
+      Masochist: {primary: { partnerStyle: "Sadist", dynamicName: "The Symphony of Sensation", description: "A profound and trusting dynamic where the Sadist artfully orchestrates experiences of pain/intensity that the Masochist craves and transforms into pleasure or release. Communication and aftercare are paramount.", interactionFocus: ["Negotiated infliction of specific types of pain/sensation.", "Intense focus on the Masochist's responses and limits.", "Deep emotional connection forged through shared intensity and trust."] }, secondary: [{ partnerStyle: "Disciplinarian", dynamicName: "The Ordeal & Reward", description: "A Disciplinarian can use painful consequences (consensually) that a Masochist might find perversely rewarding or purifying." }, { partnerStyle: "Master", dynamicName: "The Enduring Devotion", description: "A Master might test a Masochistic Slave's limits as a form of devotion or trial, always with care." }]},
+      Pet: {primary: { partnerStyle: "Owner", dynamicName: "The Cherished Bond", description: "A loving and often playful dynamic where the Owner provides care, guidance, and a sense of belonging to their cherished Pet. Loyalty and affection are central.", interactionFocus: ["Establishing routines, 'training' (if desired), and clear expectations.", "Affection, praise, and play appropriate to the pet persona.", "Use of pet-like accessories and behaviors to enhance the role-play."] }, secondary: [{ partnerStyle: "Trainer", dynamicName: "The Eager Learner", description: "A Trainer can provide more structured guidance and skill development for a Pet, focusing on obedience and specific behaviors." }, { partnerStyle: "Caretaker", dynamicName: "The Pampered Companion", description: "A Caretaker can provide a very soft, nurturing environment for a Pet, focusing on comfort and affection." }]},
+      Slave: {primary: { partnerStyle: "Master", dynamicName: "The Sovereign & Steward Covenant", description: "A profound and deeply committed dynamic based on total trust, devotion, and a comprehensive exchange of power. The Master guides and shapes, while the Slave serves and finds fulfillment in their role.", interactionFocus: ["Establishing clear protocols, duties, and expectations.", "Ongoing communication and ethical considerations.", "Mutual dedication to the long-term vision of the dynamic."] }, secondary: [{ partnerStyle: "Mistress", dynamicName: "The Empress & Attendant", description: "Similar to Master/Slave, often with a particular aesthetic or focus on service to a powerful feminine authority." }, { partnerStyle: "Goddess", dynamicName: "The Divine & Worshipper", description: "A Slave may devote themselves to a Goddess figure, with service taking on a worshipful quality." }]},
+      Submissive: {primary: { partnerStyle: "Dominant", dynamicName: "The Harmonious Exchange", description: "A foundational BDSM pairing where the Submissive's desire to yield and please meets the Dominant's desire to lead and guide. Trust and communication form the bedrock.", interactionFocus: ["Clear direction from the Dominant and willing obedience from the Submissive.", "Mutual exploration of desires and limits.", "Building intimacy through power exchange and shared vulnerability."] }, secondary: [{ partnerStyle: "Sir", dynamicName: "The Honored Allegiance", description: "A Submissive may find deep satisfaction in serving a Sir, embodying respect, formality, and dutiful obedience." }, { partnerStyle: "Protector", dynamicName: "The Sheltered Heart", description: "A Submissive seeking safety and gentle guidance thrives under a Protector's watchful care." }]},
+      Switch: {primary: { partnerStyle: "Switch", dynamicName: "The Endless Waltz", description: "Two adaptable souls exploring the full spectrum of power. This dynamic is characterized by its fluidity, mutual understanding, and the exciting unpredictability of who might lead or follow.", interactionFocus: ["Clear communication of desires to switch roles.", "Embracing spontaneity and shared creativity.", "Appreciation for both dominant and submissive perspectives."] }, secondary: [{ partnerStyle: "Dominant", dynamicName: "The Versatile Vessel", description: "When the Switch leans submissive, a Dominant can enjoy their adaptability and understanding of power." }, { partnerStyle: "Submissive", dynamicName: "The Empathetic Guide", description: "When the Switch leans dominant, a Submissive can benefit from their unique insight and ability to anticipate needs." }]},
+      Puppy: {primary: { partnerStyle: "Owner", dynamicName: "The Alpha & Adoring Pup", description: "The Owner provides the structure, affection, and guidance a playful Puppy craves, fostering loyalty and energetic companionship.", interactionFocus: ["Positive reinforcement training for 'tricks' and obedience.", "Energetic play, 'walkies,' and lots of petting/praise.", "Clear rules and routines combined with loving care."] }, secondary: [{ partnerStyle: "Trainer", dynamicName: "The Master & Eager Disciple", description: "A more focused dynamic on skill development and obedience, where the Puppy strives to please a dedicated Trainer." }, { partnerStyle: "Playmate", dynamicName: "The Romping Packmates", description: "Two playful energies meet, perhaps one more guiding, but the focus is on shared fun and puppyish antics." }]},
+      Kitten: {primary: { partnerStyle: "Owner", dynamicName: "The Warm Lap & Indulgent Hand", description: "The Owner provides comfort, affection (often on the Kitten's terms), and an engaging environment for the sensual and sometimes mischievous Kitten.", interactionFocus: ["Gentle petting, grooming, and providing comfortable 'napping' spots.", "Engaging in playful 'hunting' games with toys.", "Understanding and appreciating the Kitten's need for both affection and independence."] }, secondary: [{ partnerStyle: "Nurturer", dynamicName: "The Pampered Feline", description: "A Nurturer can provide an exceptionally comforting and indulgent environment for a Kitten, focusing on their sensory pleasure and emotional well-being." }, { partnerStyle: "Mistress", dynamicName: "The Elegant Familiar", description: "A sophisticated Mistress might enjoy a graceful, intelligent Kitten as a companion, appreciating their beauty and subtle wiles." }]},
+      Princess: {primary: { partnerStyle: "Daddy", dynamicName: "Daddy's Spoiled Darling", description: "The Daddy indulges and pampers his Princess, providing adoration, luxurious comforts, and gentle guidance, while she revels in being cherished.", interactionFocus: ["Lavishing praise, gifts, and attention.", "Catering to her desires for comfort and beauty.", "Setting gentle but firm boundaries within a loving, indulgent framework."] }, secondary: [{ partnerStyle: "Master", dynamicName: "The Royal & Her Chamberlain", description: "A Master with a taste for the finer things might enjoy a Princess's company, expecting refined behavior in return for lavish treatment." }, { partnerStyle: "Caretaker", dynamicName: "The Pampered Jewel", description: "A Caretaker can focus on providing ultimate comfort and fulfilling every (reasonable) whim of the Princess." }]},
+      Prey: {primary: { partnerStyle: "Hunter", dynamicName: "The Primal Dance of Pursuit", description: "An exhilarating game of cat-and-mouse where the Hunter's skill in strategy and suspense meets the Prey's thrill in evasion and eventual (consensual) capture.", interactionFocus: ["Building suspense and a sense of (safe) danger through the chase.", "Strategic use of environment and psychological tactics.", "The intense release and connection upon 'capture,' respecting all limits."] }, secondary: [{ partnerStyle: "Sadist", dynamicName: "The Hunted Quarry's Ordeal", description: "A Sadist might incorporate the chase as a prelude to intense sensation play upon capture, heightening the Prey's anticipation and vulnerability." }, { partnerStyle: "Commander", dynamicName: "The Fugitive & The Taskmaster", description: "A Commander might set up an elaborate 'escape and evasion' scenario, testing the Prey's skills against their strategic pursuit." }]},
+      Toy: {primary: { partnerStyle: "Owner", dynamicName: "The Collector & Cherished Plaything", description: "The Owner delights in their adaptable Toy, using them for amusement, pleasure, or creative expression, while the Toy revels in being the focus of such attention and fulfilling desires.", interactionFocus: ["Directing the Toy in various scenarios, poses, or activities.", "Appreciating the Toy's responsiveness and willingness to be 'used'.", "Balancing objectification with care and ensuring the Toy's enjoyment."] }, secondary: [{ partnerStyle: "Puppeteer", dynamicName: "The Animated Creation", description: "A Puppeteer can take great joy in the Toy's adaptability, manipulating them in intricate and creative ways." }, { partnerStyle: "Sadist", dynamicName: "The Resilient Implement", description: "A Toy with masochistic tendencies can become a focus for a Sadist's attentions, enduring and responding as directed." }]},
+      Doll: {primary: { partnerStyle: "Puppeteer", dynamicName: "The Artisan & Living Sculpture", description: "The Puppeteer meticulously shapes, poses, and adorns the Doll, transforming them into a perfect, still work of art, while the Doll finds fulfillment in embodying this aesthetic vision.", interactionFocus: ["Precise posing, dressing, and aesthetic arrangement of the Doll.", "Extended periods of stillness and embodying a specific look or persona.", "A deep, often non-verbal, connection based on shared artistic intent."] }, secondary: [{ partnerStyle: "Owner", dynamicName: "The Collector's Prize", description: "An Owner with a strong aesthetic sense might cherish a Doll as a beautiful, prized possession to be admired and perfectly maintained." }, { partnerStyle: "Mistress", dynamicName: "The Perfect Attendant", description: "A Mistress might desire a Doll as a silent, beautiful fixture or attendant, embodying grace and stillness." }]},
+      Bunny: {primary: { partnerStyle: "Caretaker", dynamicName: "The Gentle Hand & Timid Heart", description: "The Caretaker provides a safe, comforting, and reassuring environment for the gentle and often shy Bunny, who thrives on soft affection and quiet companionship.", interactionFocus: ["Providing a calm, secure 'burrow' or safe space.", "Offering gentle pets, soft words, and patient affection.", "Engaging in quiet, non-threatening play and companionship."] }, secondary: [{ partnerStyle: "Nurturer", dynamicName: "The Sheltered Innocent", description: "A Nurturer can create an ideal haven for a Bunny, focusing on their emotional well-being and providing abundant gentle care." }, { partnerStyle: "Protector", dynamicName: "The Shielded Warren", description: "A Protector can make a Bunny feel exceptionally safe from the 'scary world,' allowing them to relax and be their gentle selves." }]},
+      Servant: {primary: { partnerStyle: "Master", dynamicName: "The Lord/Lady & Loyal Steward", description: "The Master/Mistress relies on the Servant's diligent, polite, and anticipatory service, while the Servant finds honor and purpose in maintaining order and fulfilling duties impeccably.", interactionFocus: ["Clear delegation of tasks and expectations for high standards of service.", "Formal protocols, respectful address, and efficient execution of duties.", "Mutual respect based on clearly defined roles and responsibilities."] }, secondary: [{ partnerStyle: "Mistress", dynamicName: "The Lady & Her Attendant", description: "Focuses on refined service, discretion, and upholding the elegant standards of the Mistress's domain." }, { partnerStyle: "Sir", dynamicName: "The Knight & His Squire", description: "A dynamic of formal, honorable service to a respected figure of authority, emphasizing duty and loyalty." }]},
+      Playmate: {primary: { partnerStyle: "Playmate", dynamicName: "The Dynamic Duo of Delight", description: "Two energetic and creative souls dedicated to mutual fun, adventure, and shared laughter, exploring kinks and scenarios with enthusiasm and a light heart.", interactionFocus: ["Brainstorming and engaging in new, exciting activities or scenes together.", "Prioritizing mutual enjoyment, laughter, and positive energy.", "Flexible roles and a spirit of 'let's try it!' exploration."] }, secondary: [{ partnerStyle: "Switch", dynamicName: "The Ever-Changing Game", description: "A Switch can be an ideal Playmate, bringing versatility and a willingness to explore different roles within the fun." }, { partnerStyle: "Assertive", dynamicName: "The Adventure Leader & Eager Cohort", description: "An Assertive Dominant might lead the adventures, with the Playmate bringing enthusiasm and creative ideas to the execution." }]},
+      Babygirl: {primary: { partnerStyle: "Daddy", dynamicName: "Daddy's Little Princess/Sweetheart", description: "The Daddy provides a loving, firm, and nurturing hand for his Babygirl, who thrives on affection, guidance, and feeling cherished and a bit spoiled.", interactionFocus: ["Setting loving rules and providing gentle discipline/guidance.", "Offering abundant affection, praise, and reassurance.", "Indulging her with 'cute' things, special treats, and feeling like the center of his world."] }, secondary: [{ partnerStyle: "Mommy", dynamicName: "Mommy's Precious Angel", description: "Similar to Daddy, with a focus on maternal warmth, emotional comfort, and gentle nurturing of the Babygirl." }, { partnerStyle: "Caretaker", dynamicName: "The Cherished Innocent", description: "A Caretaker can provide a very soft, indulgent environment, focusing on the Babygirl's comfort and happiness." }]},
+      Captive: {primary: { partnerStyle: "Hunter", dynamicName: "The Unrelenting Pursuit & Final Surrender", description: "The Hunter orchestrates a thrilling (consensual) scenario of pursuit and confinement, while the Captive experiences the intense psychological drama of helplessness and yielding to a superior force.", interactionFocus: ["Elaborate scenarios of chase, evasion, and eventual capture.", "Psychological play involving interrogation, tests of will, or 'breaking' the Captive (consensually).", "Intense focus on safety, trust, and the cathartic release for the Captive."] }, secondary: [{ partnerStyle: "Master", dynamicName: "The Rebel & The Sovereign's Justice", description: "A Master might capture a 'rebellious' subject, with the captivity focusing on restoring order and obedience through structured means." }, { partnerStyle: "Commander", dynamicName: "The POW & The Interrogator", description: "A Commander might run a 'prisoner of war' scenario, focusing on strategic interrogation and information extraction (all role-play)." }]},
+      Thrall: {primary: { partnerStyle: "Goddess", dynamicName: "The Divine Presence & Devoted Oracle", description: "The Goddess embodies supreme power and inspires awe, while the Thrall offers absolute devotion, worship, and service, finding ultimate purpose in this transcendent connection.", interactionFocus: ["Rituals of worship, offerings, and acts of profound, selfless service.", "The Thrall's complete surrender of will to the Goddess's divine desires.", "A dynamic often imbued with spiritual or mystical significance for both."] }, secondary: [{ partnerStyle: "Master", dynamicName: "The Absolute Sovereign & Bound Soul", description: "A Master seeking total, unwavering devotion finds a perfect counterpart in a Thrall who desires to live solely for their Master's will." }, { partnerStyle: "Puppeteer", dynamicName: "The Mind Unbound, The Body Enslaved", description: "A Puppeteer might find a Thrall the ultimate subject for complete psychological and physical direction, an extension of their very being." }]},
+      Puppet: {primary: { partnerStyle: "Puppeteer", dynamicName: "The Maestro & The Marionette", description: "The Puppeteer skillfully directs every action and response of the Puppet, who finds joy in perfect, unthinking obedience and becoming a flawless instrument of another's will.", interactionFocus: ["Precise, often non-verbal, commands and immediate, exact responses from the Puppet.", "Creative scenarios where the Puppet is manipulated, posed, or made to perform intricate tasks.", "Exploration of agency, control, and the beauty of responsive motion."] }, secondary: [{ partnerStyle: "Master", dynamicName: "The Creator & His Automaton", description: "A Master might 'program' a Puppet with specific behaviors and responses, enjoying the perfection of their animated creation." }, { partnerStyle: "Rigger", dynamicName: "The Suspended Dancer", description: "A Rigger can use ropes not just for bondage but to manipulate a Puppet's body like a marionette, creating living, controlled art." }]},
+      Maid: {primary: { partnerStyle: "Mistress", dynamicName: "The Lady of the Manor & Her Impeccable Attendant", description: "The Mistress enjoys an environment of perfect order and refined service provided by her diligent Maid, who takes pride in upholding the highest standards of domestic elegance.", interactionFocus: ["Maintaining pristine cleanliness, order, and aesthetic appeal.", "Courteous, discreet, and anticipatory service according to the Mistress's preferences.", "A formal or semi-formal dynamic emphasizing respect and flawless execution of duties."] }, secondary: [{ partnerStyle: "Master", dynamicName: "The Head of Household & Chief Domestic", description: "Similar to Mistress, focusing on the efficient and perfect running of the Master's domain." }, { partnerStyle: "Sir", dynamicName: "The Gentleman & His Valet/Housekeeper", description: "A more formal, traditional service role, emphasizing respect, discretion, and impeccable standards." }]},
+      Painslut: {primary: { partnerStyle: "Sadist", dynamicName: "The Forge of Ecstasy", description: "The Sadist delivers the intense, often extreme, sensations the Painslut craves, pushing boundaries safely while the Painslut revels in the raw, unadulterated physical input.", interactionFocus: ["Open and enthusiastic requests for 'more' or specific intense sensations from the Painslut.", "Skillful, safe delivery of extreme (but consensual) pain by the Sadist.", "A highly energetic, often performative, exchange of intense physical stimuli and response."] }, secondary: [{ partnerStyle: "Master", dynamicName: "The Trial by Fire", description: "A Master might test a Painslut's endurance and devotion through intense, painful ordeals, always with underlying care (if ethical)." }, { partnerStyle: "Hunter", dynamicName: "The Cornered Beast's Defiance", description: "Upon capture, a Painslut Prey might 'defiantly' demand or endure intense treatment from the Hunter." }]},
+      Bottom: {primary: { partnerStyle: "Dominant", dynamicName: "The Sculptor & The Clay", description: "The Dominant shapes the experience, and the Bottom skillfully receives, endures, and transforms that input, whether it's sensation, instruction, or emotional energy.", interactionFocus: ["The Dominant's clear delivery of action/stimulus.", "The Bottom's receptive endurance and processing of the experience.", "Mutual trust and communication to ensure the experience is satisfying and within limits."] }, secondary: [{ partnerStyle: "Sadist", dynamicName: "The Canvas of Sensation", description: "A Sadist can explore a wide range of sensations on a willing and receptive Bottom." }, { partnerStyle: "Rigger", dynamicName: "The Bound Form", description: "A Rigger works with the Bottom's body, who receives the pressure and confinement of the ropes." }]},
+      Disciplinarian: {primary: { partnerStyle: "Brat", dynamicName: "The Order & Mischief Duet", description: "A classic and engaging pairing where the Disciplinarian's love for order and rules meets the Brat's love for playfully testing them. Success lies in mutual enjoyment of the 'game' and clear communication.", interactionFocus: ["Setting clear, understandable rules and consequences.", "Consistent and fair application of discipline.", "Enjoyment of playful defiance and the process of 'taming'."] }, secondary: [{ partnerStyle: "Slave", dynamicName: "The Structured Devotion", description: "A Slave who thrives on clear protocols and guidance can find deep satisfaction with a fair and consistent Disciplinarian." }, { partnerStyle: "Pet", dynamicName: "The Guided Companion", description: "For Pets who require training or clear behavioral expectations, a Disciplinarian can provide a firm yet caring framework." }]},
+      Master: {primary: { partnerStyle: "Slave", dynamicName: "The Sovereign & Steward Covenant", description: "A profound and deeply committed dynamic based on total trust, devotion, and a comprehensive exchange of power. The Master guides and shapes, while the Slave serves and finds fulfillment in their role.", interactionFocus: ["Establishing clear protocols, duties, and expectations.", "Ongoing communication and ethical considerations.", "Mutual dedication to the long-term vision of the dynamic."] }, secondary: [{ partnerStyle: "Thrall", dynamicName: "The Divine & Devotee", description: "For Masters who embody a more 'god-like' or worshiped persona, a Thrall's deep, reverent submission is a natural fit." }, { partnerStyle: "Submissive", dynamicName: "The Mentor & Protégé", description: "A highly structured Submissive seeking deep guidance and a defined role can flourish under a Master's tutelage." }]},
+      Nurturer: {primary: { partnerStyle: "Little", dynamicName: "The Hearth & Heart", description: "A deeply caring dynamic where the Nurturer provides a safe, loving space for the Little to explore their innocence and playfulness. Emotional connection is key.", interactionFocus: ["Providing comfort, reassurance, and gentle guidance.", "Engaging in age-appropriate play and activities.", "Fostering emotional security and a sense of being cherished."] }, secondary: [{ partnerStyle: "Pet", dynamicName: "The Gentle Hand & Happy Paws", description: "A Nurturer can provide immense comfort and affection to a Pet, focusing on their well-being and happiness." }, { partnerStyle: "Submissive", dynamicName: "The Kindred Spirit", description: "A Submissive who values emotional connection and gentle guidance will thrive with a Nurturer." }]},
+      Sadist: {primary: { partnerStyle: "Masochist", dynamicName: "The Alchemist's Fire", description: "A symbiotic relationship where the Sadist's skill in delivering sensation meets the Masochist's desire to receive and transform it. Trust, communication, and aftercare are vital pillars.", interactionFocus: ["Careful negotiation and application of desired sensations/pain.", "Intense focus on the Masochist's physical and emotional responses.", "Shared journey into heightened states of consciousness or euphoria."] }, secondary: [{ partnerStyle: "Painslut", dynamicName: "The Unflinching Test", description: "A Painslut's craving for intense experiences provides a fertile ground for a Sadist's explorations, always within ethical boundaries." }, { partnerStyle: "Bottom", dynamicName: "The Enduring Canvas", description: "A Bottom with masochistic tendencies can engage with a Sadist in scenes focused on endurance and intense sensation." }]},
+      Owner: {primary: { partnerStyle: "Pet", dynamicName: "The Alpha & Omega Pack", description: "A dynamic rooted in affectionate possession and care, where the Owner guides, trains, and cherishes their Pet, who in turn offers loyalty and playful companionship.", interactionFocus: ["Establishing clear rules, routines, and 'training' if desired.", "Providing consistent affection, praise, and care.", "Enjoying the unique bond and persona-based interactions."] }, secondary: [{ partnerStyle: "Puppy", dynamicName: "The Lead & The Leash", description: "An Owner provides the structure and affection a playful Puppy craves." }, { partnerStyle: "Kitten", dynamicName: "The Warm Lap & Contented Purr", description: "An Owner indulges a Kitten's desire for comfort, play, and attention on their terms." }]},
+      Dominant: {primary: { partnerStyle: "Submissive", dynamicName: "The Architect & The Foundation", description: "The Dominant provides the vision and direction, while the Submissive offers the trust and willingness to build upon that foundation, creating a balanced and respectful power exchange.", interactionFocus: ["Clear communication of desires and boundaries from both.", "The Dominant taking initiative and responsibility for the scene/dynamic.", "The Submissive's active and engaged yielding to guidance."] }, secondary: [{ partnerStyle: "Bottom", dynamicName: "The Director & The Performer", description: "A Dominant can direct a Bottom through various experiences, relying on their receptiveness and endurance." }, { partnerStyle: "Switch", dynamicName: "The Anchor & The Current", description: "A Dominant can provide a stable point of authority for a Switch who is currently exploring their submissive side." }]},
+      Assertive: {primary: { partnerStyle: "Brat", dynamicName: "The Unstoppable Force & The Audacious Spark", description: "The Assertive Dominant's bold energy meets the Brat's challenge head-on, creating a high-energy dynamic of playful power struggles and exciting confrontations.", interactionFocus: ["Direct and confident commands meeting playful defiance.", "A fast-paced interplay of testing limits and establishing authority.", "Mutual enjoyment of a spirited, no-holds-barred (but consensual) engagement."] }, secondary: [{ partnerStyle: "Masochist", dynamicName: "The Overwhelming Tide & The Ecstatic Surrender", description: "An Assertive Sadist can provide the intense, forceful delivery of sensation that some Masochists crave." }, { partnerStyle: "Prey", dynamicName: "The Relentless Predator & The Thrilled Quarry", description: "An Assertive Hunter makes for a terrifyingly exciting chase, pushing the Prey's limits of evasion and anticipation." }]},
+      Strict: {primary: { partnerStyle: "Slave", dynamicName: "The Lawgiver & The Devoted Adherent", description: "The Strict Dominant's love for order and precision is perfectly met by the Slave's desire for clear protocols and unwavering adherence to a defined structure.", interactionFocus: ["Meticulous rule-setting and expectation of flawless obedience.", "Formal protocols, consistent schedules, and detailed task management.", "A shared appreciation for order, discipline, and perfection in execution."] }, secondary: [{ partnerStyle: "Servant", dynamicName: "The Head of Protocol & The Impeccable Aide", description: "A Strict Master/Mistress will appreciate a Servant's dedication to upholding exacting standards of service and household management." }, { partnerStyle: "Maid", dynamicName: "The Overseer of Perfection & The Polished Gem", description: "A Strict household benefits from a Maid's dedication to spotless environments and flawless service." }]},
+      Mistress: {primary: { partnerStyle: "Servant", dynamicName: "The Divine & Her Devoted Chamberlain", description: "The Mistress's regal bearing and desire for refined service are perfectly complemented by the Servant's dedication to anticipating her needs and upholding her elegant standards.", interactionFocus: ["Expectation of sophisticated, anticipatory service and aesthetic presentation.", "Creative and often whimsical demands met with skill and grace.", "A dynamic of adoration, refined power, and exquisite attention to detail."] }, secondary: [{ partnerStyle: "Slave", dynamicName: "The Empress & Her Bound Subject", description: "A Slave's total devotion can be directed towards fulfilling the grand and often artistic visions of a powerful Mistress." }, { partnerStyle: "Toy", dynamicName: "The Muse & Her Plaything", description: "A creative Mistress can use an adaptable Toy for elaborate scenes, aesthetic displays, or sensual amusement." }]},
+      Daddy: {primary: { partnerStyle: "Little", dynamicName: "Daddy's Cherished Innocent", description: "The Daddy provides a secure, loving, and structured environment where his Little can safely explore their innocence, playfulness, and need for paternal guidance and affection.", interactionFocus: ["Setting clear, loving rules and providing gentle but firm discipline.", "Abundant affection, praise, and activities that nurture the Little's spirit.", "A strong sense of protection, responsibility, and tender care from the Daddy."] }, secondary: [{ partnerStyle: "Babygirl", dynamicName: "Daddy's Spoiled Sweetheart", description: "Similar to Little, but perhaps with more emphasis on being 'spoiled' and a slightly older 'young' persona." }, { partnerStyle: "Pet", dynamicName: "The Kind Master & His Adored Companion", description: "A Daddy's nurturing and guiding nature can extend well to a Pet who craves affection and clear boundaries." }]},
+      Mommy: {primary: { partnerStyle: "Little", dynamicName: "Mommy's Precious Lamb", description: "The Mommy offers a haven of warmth, emotional support, and gentle guidance, allowing her Little to feel unconditionally loved, safe, and free to be their playful, innocent self.", interactionFocus: ["Constant reassurance, comfort, and tender affection.", "Engaging in nurturing activities and providing a soft place to fall.", "Gentle guidance on behavior and emotional expression, always rooted in love."] }, secondary: [{ partnerStyle: "Babygirl", dynamicName: "Mommy's Darling Angel", description: "A Mommy can provide the deep emotional comfort and nurturing affection a Babygirl often seeks." }, { partnerStyle: "Bunny", dynamicName: "The Gentle Gardener & Her Timid Flower", description: "A Mommy's soft, patient approach is ideal for a shy Bunny, helping them feel secure and cherished." }]},
+      Rigger: {primary: { partnerStyle: "Rope Bunny", dynamicName: "The Weaver & The Woven", description: "A symbiotic dance of art and trust, where the Rigger's technical skill and aesthetic vision meet the Rope Bunny's willingness to become a living canvas for intricate ropework.", interactionFocus: ["Meticulous application of rope, focusing on safety, aesthetics, and sensation.", "Constant communication and feedback between Rigger and Rope Bunny.", "Shared appreciation for the beauty, intensity, and unique connection forged through rope."] }, secondary: [{ partnerStyle: "Masochist", dynamicName: "The Sculptor of Sensation", description: "A Rigger can incorporate constrictive or pressure-based pain into their ties for a Masochistic Rope Bunny, layering sensations." }, { partnerStyle: "Captive", dynamicName: "The Unbreakable Bonds", description: "A Rigger can create elaborate and inescapable (but safe) bonds as part of a Captivity scenario, enhancing the feeling of helplessness." }]},
+      Hunter: {primary: { partnerStyle: "Prey", dynamicName: "The Eternal Chase", description: "An adrenaline-fueled dynamic where the Hunter's strategic pursuit and the Prey's thrilling evasion create a primal dance of (consensual) fear, excitement, and eventual surrender.", interactionFocus: ["Building suspense and an atmosphere of thrilling (safe) danger.", "Strategic use of environment, stealth, and psychological tactics.", "The intense climax of 'capture' and the subsequent shift in power/dynamics."] }, secondary: [{ partnerStyle: "Captive", dynamicName: "The Quarry Cornered", description: "The Hunter's skills are perfectly suited to scenarios leading to the 'capture' and confinement of a willing Captive." }, { partnerStyle: "Brat", dynamicName: "The Elusive Challenge", description: "A Brat who enjoys being 'chased down' and 'tamed' can provide an interesting twist to the Hunter/Prey dynamic, adding wit to the evasion." }]},
+      Trainer: {primary: { partnerStyle: "Puppy", dynamicName: "The Guide & The Eager Student", description: "The Trainer's patience and clear methodology help the enthusiastic Puppy learn desired behaviors and tricks, fostering a bond of achievement and affectionate discipline.", interactionFocus: ["Clear, consistent commands and positive reinforcement techniques.", "Structured 'training sessions' focusing on specific skills or obedience.", "Celebrating progress and building the Puppy's confidence and discipline."] }, secondary: [{ partnerStyle: "Pet", dynamicName: "The Mentor & The Companion", description: "A Trainer can work with any Pet persona, shaping behaviors and strengthening the bond through structured interaction and clear expectations." }, { partnerStyle: "Slave", dynamicName: "The Taskmaster & The Apprentice", description: "A Trainer can teach a Slave specific skills or protocols, focusing on precision and mastery through disciplined practice." }]},
+      Puppeteer: {primary: { partnerStyle: "Puppet", dynamicName: "The Mind's Eye & The Mirrored Form", description: "An intricate dance of will and response, where the Puppeteer's subtle (or overt) direction is flawlessly enacted by the Puppet, creating a mesmerizing display of control and yielding.", interactionFocus: ["Issuing precise commands (verbal, non-verbal, or even 'telepathic').", "The Puppet's immediate and exact replication of the Puppeteer's intent.", "Exploration of themes of agency, automation, and the beauty of perfect, responsive obedience."] }, secondary: [{ partnerStyle: "Doll", dynamicName: "The Animator & The Exquisite Automaton", description: "A Puppeteer can 'animate' a Doll, directing their movements, expressions, and creating living art from a still form." }, { partnerStyle: "Toy", dynamicName: "The Programmer & The Interactive Device", description: "A Puppeteer can 'program' a Toy with specific responses or functions, enjoying the creative control over their 'living device'." }]},
+      Protector: {primary: { partnerStyle: "Little", dynamicName: "The Fortress & The Sheltered Bloom", description: "The Protector creates an unwavering shield of safety and security around their Little, allowing them to explore their innocence and vulnerability without fear.", interactionFocus: ["Vigilant awareness and proactive measures to ensure the Little's physical and emotional safety.", "Providing a constant source of strength, reassurance, and comfort.", "Defending the Little from any perceived harm or distress."] }, secondary: [{ partnerStyle: "Bunny", dynamicName: "The Guardian & The Gentle Heart", description: "A Protector's steadfast presence can be immensely comforting to a timid Bunny, creating a safe space for them to emerge." }, { partnerStyle: "Submissive", dynamicName: "The Sentinel & The Trusting Soul", description: "A Submissive who feels particularly vulnerable or anxious can find deep solace in a Protector's unwavering care." }]},
+      Caretaker: {primary: { partnerStyle: "Little", dynamicName: "The Warm Hearth & The Contented Child", description: "The Caretaker provides comprehensive emotional and physical comfort, tending to the Little's needs with patience, empathy, and unwavering affection.", interactionFocus: ["Anticipating and meeting the Little's needs for comfort, nourishment, and gentle play.", "Creating a soothing, predictable, and loving environment.", "Providing a constant source of emotional support and understanding."] }, secondary: [{ partnerStyle: "Pet", dynamicName: "The Gentle Groomer & The Pampered Friend", description: "A Caretaker can lavish a Pet with attention, comfort, and all the gentle ministrations they desire." }, { partnerStyle: "Babygirl", dynamicName: "The Soothing Presence & The Cherished One", description: "A Caretaker excels at providing the consistent affection, reassurance, and nurturing environment a Babygirl often craves." }]},
+      Sir: {primary: { partnerStyle: "Submissive", dynamicName: "The Commander & The Loyal Officer", description: "Sir's honorable and principled leadership inspires deep respect and dutiful obedience from a Submissive who values formality, integrity, and clear direction.", interactionFocus: ["Formal address, clear protocols, and expectations of respectful conduct.", "Commands delivered with calm authority and an expectation of precise execution.", "A dynamic built on mutual respect for established hierarchy and principles."] }, secondary: [{ partnerStyle: "Servant", dynamicName: "The Lord of the Estate & The Head Steward", description: "A Sir's expectation of order and propriety is well met by a Servant dedicated to upholding high standards with honor." }, { partnerStyle: "Maid", dynamicName: "The Gentleman of the House & The Discreet Housekeeper", description: "A Sir can rely on a Maid to maintain his environment with quiet efficiency and respectful decorum." }]},
+      Goddess: {primary: { partnerStyle: "Thrall", dynamicName: "The Divine Sun & The Reflecting Moon", description: "The Goddess's radiant power and otherworldly aura inspire absolute devotion and worship from the Thrall, who finds ultimate purpose in serving and reflecting Her divine will.", interactionFocus: ["Elaborate rituals of worship, offerings, and acts of profound, selfless service.", "The Thrall's complete immersion in the Goddess's desires and pronouncements.", "A transcendent connection that often blurs the lines between the mundane and the mystical."] }, secondary: [{ partnerStyle: "Slave", dynamicName: "The Celestial Queen & Her Earthly Devotee", description: "A Slave can offer profound, life-encompassing service to a Goddess, dedicating their existence to Her glory." }, { partnerStyle: "Masochist", dynamicName: "The Ordeal of a Deity & The Ecstatic Acolyte", description: "A Goddess might demand trials of endurance or painful offerings from a Masochistic worshipper as a test of faith or path to enlightenment." }]},
+      Commander: {primary: { partnerStyle: "Submissive", dynamicName: "The General & The Elite Trooper", description: "The Commander's strategic brilliance and decisive leadership are met with the Submissive's disciplined obedience and trust, allowing for the efficient execution of complex 'missions'.", interactionFocus: ["Clear articulation of objectives, strategies, and tactical orders.", "Expectation of swift, precise, and unquestioning execution of commands from subordinates.", "A focus on teamwork, discipline, and achieving shared (Commander-defined) goals."] }, secondary: [{ partnerStyle: "Slave", dynamicName: "The Warlord & The Unwavering Legionnaire", description: "A Commander can utilize a Slave's deep obedience for intricate, demanding tasks or 'campaigns'." }, { partnerStyle: "Switch", dynamicName: "The Field Marshal & The Versatile Agent", description: "A Switch can serve as a highly adaptable operative for a Commander, capable of fulfilling various roles within a strategic plan." }]}
+    };
     this.guidingPreferences = {
       submissive: [
         { id: 'service', text: "The quiet joy of devoted service and pleasing another.", archetypes: ['Slave', 'Servant', 'Maid', 'Pet', 'Puppy'] },
@@ -816,17 +641,15 @@ Puppy: {
     this.addEventListeners();
   }
 
-  // ... (Rest of the StyleFinderApp class methods: initElements, addEventListeners, computeCurrentScores, updateDashboard,
-  //      getTotalSteps, renderStyleFinder, setStyleFinderRole, setGuidingPreference, setStyleFinderTrait,
-  //      nextStyleFinderStep, prevStyleFinderStep, getCurrentStepConfig, startOver, calculateStyleFinderResult,
-  //      generateSummaryDashboard, showFeedback, showTraitInfo, showFullDetails - these remain unchanged from the
-  //      immediately preceding "complete" script.js example you approved, as their logic depends on the now-filled data structures.)
+  // ALL OTHER METHODS (initElements, addEventListeners, computeCurrentScores, updateDashboard,
+  // calculateStyleFinderResult, getQuizStepsArray, renderStyleFinder, setStyleFinderRole,
+  // setGuidingPreference, setStyleFinderTrait, handleUserKeyTraitSelection, nextStyleFinderStep,
+  // prevStyleFinderStep, getCurrentStepConfig, startOver, generateSummaryDashboard, showFeedback,
+  // showTraitInfo, showFullDetails, and all CURATION methods, openPlaygroundFromQuiz, showQuizModalAtLastStep)
+  // ARE DEFINED BELOW THIS POINT, AS PROVIDED IN THE PREVIOUS FULL SCRIPT.
+  // It is critical that they are all present and correct for the application to function.
 
-// Assume the rest of the class methods are here, identical to the previous full script response.
-// For the sake of this focused update, I am not repeating them if their logic did not change.
-// The primary change was filling out the data objects above.
-
-  initElements() {
+ initElements() {
     this.elements = {
       styleFinderBtn: document.getElementById('style-finder-btn'),
       styleFinder: document.getElementById('style-finder'),
@@ -835,50 +658,97 @@ Puppy: {
       stepContent: document.getElementById('step-content'),
       feedback: document.getElementById('feedback'),
       dashboard: document.getElementById('dashboard'),
-      themeToggle: document.getElementById('theme-toggle')
+      themeToggle: document.getElementById('theme-toggle'),
+      returnToResultsBtn: document.getElementById('return-to-results-btn')
     };
     if (this.elements.styleFinderBtn) {
         this.elements.styleFinderBtn.textContent = "Unveil Your Archetype";
     }
+    if (this.elements.returnToResultsBtn) {
+        this.elements.returnToResultsBtn.style.display = 'none';
+    }
   }
 
   addEventListeners() {
-    this.elements.styleFinderBtn.addEventListener('click', () => {
-      this.styleFinderActive = true;
-      this.styleFinderStep = 0;
-      this.styleFinderRole = null;
-      this.styleFinderAnswers = { traits: {}, guidingPreference: null };
-      this.styleFinderScores = {};
-      this.hasRenderedDashboard = false;
-      this.elements.styleFinder.style.display = 'flex';
-      this.renderStyleFinder();
-      this.showFeedback("The journey of discovery begins...");
-    });
-    this.elements.closeStyleFinder.addEventListener('click', () => { this.styleFinderActive = false; this.elements.styleFinder.style.display = 'none'; });
-    this.elements.themeToggle.addEventListener('click', () => {
-      const currentTheme = document.body.getAttribute('data-theme') || 'light';
-      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-      document.body.setAttribute('data-theme', newTheme);
-      this.elements.themeToggle.textContent = newTheme === 'light' ? '🌙' : '☀️';
-    });
+    if(this.elements.styleFinderBtn) {
+      this.elements.styleFinderBtn.addEventListener('click', () => {
+        this.styleFinderActive = true;
+        this.styleFinderStep = 0;
+        this.styleFinderRole = null;
+        this.styleFinderAnswers = { traits: {}, guidingPreference: null, userDefinedKeyTraits: [] };
+        this.styleFinderScores = {};
+        this.hasRenderedDashboard = false;
+        this.curationModeActive = false;
+        if (this.elements.styleFinder) this.elements.styleFinder.style.display = 'flex';
+        this.renderStyleFinder();
+        this.showFeedback("The journey of discovery begins..."); // THIS IS WHERE THE ERROR WAS
+      });
+    }
+
+    if(this.elements.closeStyleFinder) {
+      this.elements.closeStyleFinder.addEventListener('click', () => {
+          this.styleFinderActive = false;
+          this.curationModeActive = false;
+          if (this.elements.styleFinder) {
+              this.elements.styleFinder.style.display = 'none';
+          }
+          if (this.quizCompletedOnce && this.elements.returnToResultsBtn) {
+              this.elements.returnToResultsBtn.style.display = 'inline-block';
+          }
+      });
+    }
+
+    if(this.elements.themeToggle) {
+      this.elements.themeToggle.addEventListener('click', () => {
+        const currentTheme = document.body.getAttribute('data-theme') || 'light';
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', newTheme);
+        this.elements.themeToggle.textContent = newTheme === 'light' ? '🌙' : '☀️';
+      });
+    }
+
+    if (this.elements.returnToResultsBtn) {
+        this.elements.returnToResultsBtn.addEventListener('click', () => {
+            if (this.quizCompletedOnce) {
+                if (this.playgroundApp && document.getElementById('playgroundContainer') && document.getElementById('playgroundContainer').style.display !== 'none') {
+                    if (typeof this.playgroundApp.hidePlaygroundWithoutOpeningQuiz === 'function') {
+                        this.playgroundApp.hidePlaygroundWithoutOpeningQuiz();
+                    } else {
+                        const pgContainer = document.getElementById('playgroundContainer');
+                        if(pgContainer) pgContainer.style.display = 'none';
+                    }
+                }
+                this.showQuizModalAtLastStep();
+            } else {
+                this.showFeedback("Please complete the Oracle quiz first to view results.");
+            }
+        });
+    }
   }
 
   computeCurrentScores() {
     let scores = {};
-    if (!this.styleFinderRole) return scores;
+    if (!this.styleFinderRole) {
+      return scores;
+    }
     const roleStyles = this.styles[this.styleFinderRole];
+    if (!roleStyles) {
+        console.error(`No styles defined for role: ${this.styleFinderRole}`);
+        return scores;
+    }
     roleStyles.forEach(style => { scores[style] = 0; });
 
     if (this.styleFinderAnswers.guidingPreference && this.guidingPreferences[this.styleFinderRole]) {
         const preference = this.guidingPreferences[this.styleFinderRole].find(p => p.id === this.styleFinderAnswers.guidingPreference);
         if (preference && preference.archetypes) {
             preference.archetypes.forEach(arch => {
-                if (scores[arch] !== undefined) { // Check if archetype exists for the current role
+                if (scores[arch] !== undefined) {
                     scores[arch] += 25;
                 }
             });
         }
     }
+
     const styleKeyTraits = {
         'Brat': { primary: ['rebellion', 'mischief', 'playfulness'], secondary: ['adaptability', 'confidence', 'exploration'] },
         'Little': { primary: ['innocence', 'dependence', 'affection', 'playfulness'], secondary: ['vulnerability', 'receptiveness', 'sensuality'] },
@@ -904,7 +774,6 @@ Puppy: {
         'Maid': { primary: ['tidiness', 'politeness', 'service', 'obedience', 'devotion'], secondary: ['receptiveness', 'submissionDepth'] },
         'Painslut': { primary: ['painTolerance', 'craving', 'submissionDepth', 'exploration', 'receptiveness'], secondary: ['devotion', 'vulnerability', 'obedience'] },
         'Bottom': { primary: ['receptiveness', 'painTolerance', 'submissionDepth', 'vulnerability', 'adaptability'], secondary: ['sensuality', 'obedience'] },
-
         'Disciplinarian': { primary: ['discipline', 'authority', 'precision', 'patience', 'control'], secondary: ['confidence', 'leadership'] },
         'Master': { primary: ['authority', 'possession', 'dominanceDepth', 'leadership', 'confidence', 'discipline'], secondary: ['care', 'patience', 'control'] },
         'Nurturer': { primary: ['care', 'empathy', 'patience', 'affection', 'protection'], secondary: ['authority', 'confidence'] },
@@ -921,78 +790,69 @@ Puppy: {
         'Trainer': { primary: ['patience', 'discipline', 'leadership', 'care', 'precision', 'authority'], secondary: ['confidence', 'empathy', 'control'] },
         'Puppeteer': { primary: ['control', 'creativity', 'precision', 'dominanceDepth', 'patience'], secondary: ['intensity', 'authority', 'empathy'] },
         'Protector': { primary: ['care', 'authority', 'possession', 'boldness', 'patience', 'leadership'], secondary: ['empathy', 'confidence', 'intensity'] },
-        'Caretaker': { primary: ['care', 'empathy', 'patience', 'affection', 'protection', 'devotion'], secondary: ['sensuality', 'dependence'] }, // Dependence from their perspective
+        'Caretaker': { primary: ['care', 'empathy', 'patience', 'affection', 'protection', 'devotion'], secondary: ['sensuality', 'dependence'] },
         'Sir': { primary: ['authority', 'confidence', 'leadership', 'discipline', 'politeness', 'control'], secondary: ['patience', 'precision', 'integrity'] },
         'Goddess': { primary: ['confidence', 'intensity', 'dominanceDepth', 'authority', 'possession', 'creativity'], secondary: ['sensuality', 'control', 'leadership'] },
         'Commander': { primary: ['authority', 'intensity', 'dominanceDepth', 'leadership', 'precision', 'boldness'], secondary: ['confidence', 'discipline', 'control', 'strategy'] }
     };
 
-    Object.keys(this.styleFinderAnswers.traits).forEach(traitName => {
+  Object.keys(this.styleFinderAnswers.traits).forEach(traitName => {
         const rating = this.styleFinderAnswers.traits[traitName] || 0;
+        const userKeyTraitBonus = this.styleFinderAnswers.userDefinedKeyTraits.includes(traitName) ? 1.5 : 1.0;
         (this.styles[this.styleFinderRole] || []).forEach(style => {
-            if (scores[style] === undefined) scores[style] = 0; // Ensure initialization
-            const styleTraitsDef = styleKeyTraits[style] || { primary: [], secondary: [] };
-            if (styleTraitsDef.primary.includes(traitName)) {
-                scores[style] += rating * 2.0;
-            } else if (styleTraitsDef.secondary.includes(traitName)) {
-                scores[style] += rating * 1.0;
+            if (scores[style] === undefined && roleStyles.includes(style)) {
+                scores[style] = 0;
+            }
+            if (scores[style] !== undefined) {
+                const styleTraitsDef = styleKeyTraits[style] || { primary: [], secondary: [] };
+                if (styleTraitsDef.primary.includes(traitName)) {
+                    scores[style] += rating * 2.0 * userKeyTraitBonus;
+                } else if (styleTraitsDef.secondary.includes(traitName)) {
+                    scores[style] += rating * 1.0 * userKeyTraitBonus;
+                }
             }
         });
     });
     return scores;
   }
-
-  updateDashboard() {
+ updateDashboard() {
     const currentStepConfig = this.getCurrentStepConfig();
-    if (!this.styleFinderRole || !currentStepConfig || currentStepConfig.type !== 'trait' ) {
-      this.elements.dashboard.style.display = 'none';
+    if (!this.elements.dashboard || !this.styleFinderRole || !currentStepConfig || currentStepConfig.type !== 'trait' ) {
+      if(this.elements.dashboard) this.elements.dashboard.style.display = 'none';
       return;
     }
     this.elements.dashboard.style.display = 'block';
-
     const scores = this.computeCurrentScores();
     const sortedScores = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-
     if (!this.previousScores) this.previousScores = {};
     const previousPositions = {};
-    Object.entries(this.previousScores)
-        .sort((a, b) => b[1] - a[1])
-        .forEach(([style], index) => { previousPositions[style] = index; });
-
+    Object.entries(this.previousScores).sort((a, b) => b[1] - a[1]).forEach(([style], index) => { previousPositions[style] = index; });
     const isFirstRenderForTraits = !this.hasRenderedDashboard;
     let dashboardHTML = "<div class='dashboard-header'>✨ Whispers of Your Archetype ✨</div>";
     sortedScores.slice(0, 4).forEach(([style, score], index) => {
       const prevPos = previousPositions[style] !== undefined ? previousPositions[style] : index;
       const movement = prevPos - index;
       let moveIndicator = '';
-      if (this.previousScores[style] && movement !== 0 && prevPos < 4) {
+      if (this.previousScores[style] !== undefined && movement !== 0 && prevPos < 4) {
           if (movement > 0) moveIndicator = '<span class="move-up">↑</span>';
           else if (movement < 0) moveIndicator = '<span class="move-down">↓</span>';
       }
-
       const prevScoreVal = this.previousScores[style] || 0;
       const deltaValue = score - prevScoreVal;
       let delta = '';
       if (Math.abs(deltaValue) > 0.1) {
         delta = `<span class="score-delta ${deltaValue > 0 ? 'positive' : 'negative'}">${deltaValue > 0 ? '+' : ''}${(deltaValue).toFixed(1)}</span>`;
       }
-
-      const animationStyle = isFirstRenderForTraits || !this.previousScores[style] ? 'style="animation: slideIn 0.3s ease;"' : '';
+      const animationStyle = isFirstRenderForTraits || this.previousScores[style] === undefined ? 'style="animation: slideIn 0.3s ease;"' : '';
       const icon = (this.styleDescriptions[style] && this.styleDescriptions[style].icon) || '🌟';
-      dashboardHTML += `
-        <div class="dashboard-item ${index === 0 ? 'top-archetype' : ''}" ${animationStyle}>
-          <span class="style-name">${icon} ${style}</span>
-          <span class="dashboard-score">${score.toFixed(1)} ${delta} ${moveIndicator}</span>
-        </div>
-      `;
+      dashboardHTML += `<div class="dashboard-item ${index === 0 ? 'top-archetype' : ''}" ${animationStyle}><span class="style-name">${icon} ${style}</span><span class="dashboard-score">${score.toFixed(1)} ${delta} ${moveIndicator}</span></div>`;
     });
-
     this.elements.dashboard.innerHTML = dashboardHTML;
     this.previousScores = { ...scores };
     if(currentStepConfig.type === 'trait') this.hasRenderedDashboard = true;
   }
 
-  getTotalSteps() {
+  getQuizStepsArray() {
     const steps = [];
     steps.push({ type: 'welcome' });
     steps.push({ type: 'role' });
@@ -1000,171 +860,83 @@ Puppy: {
         steps.push({ type: 'guidingPreference' });
         const traitSet = (this.styleFinderRole === 'dominant' ? this.domFinderTraits : this.subFinderTraits);
         traitSet.forEach(trait => steps.push({ type: 'trait', trait: trait.name }));
+        steps.push({ type: 'userKeyTraits' });
     }
     steps.push({ type: 'roundSummary', round: 'Traits' });
     steps.push({ type: 'result' });
-    return steps.length;
+    return steps;
   }
+  
+  getTotalSteps() { return this.getQuizStepsArray().length; }
 
   renderStyleFinder() {
     if (!this.styleFinderActive || !this.elements.stepContent) return;
-
-    const steps = [];
-    steps.push({ type: 'welcome' });
-    steps.push({ type: 'role' });
-    if (this.styleFinderRole) {
-        steps.push({ type: 'guidingPreference' });
-        const traitSet = (this.styleFinderRole === 'dominant' ? this.domFinderTraits : this.subFinderTraits);
-        traitSet.forEach(trait => steps.push({ type: 'trait', trait: trait.name }));
-    }
-    steps.push({ type: 'roundSummary', round: 'Final Glimpse' });
-    steps.push({ type: 'result' });
-
+    if (this.curationModeActive) { this.renderCurationScreen(); return; }
+    const steps = this.getQuizStepsArray();
     if (this.styleFinderStep >= steps.length) this.styleFinderStep = steps.length - 1;
     const currentStepConfig = steps[this.styleFinderStep];
-    if (!currentStepConfig) return;
+    if (!currentStepConfig) {
+        console.error("Invalid step configuration for step:", this.styleFinderStep);
+        if(this.elements.stepContent) this.elements.stepContent.innerHTML = "<p>An error occurred. Please try restarting.</p>";
+        return;
+    }
     let html = "";
-
     if (currentStepConfig.type === 'trait' && this.styleFinderRole) {
         const traitSet = (this.styleFinderRole === 'dominant' ? this.domFinderTraits : this.subFinderTraits);
         const currentTraitIndex = traitSet.findIndex(t => t.name === currentStepConfig.trait);
         const questionsLeft = traitSet.length - (currentTraitIndex + 1);
-        this.elements.progressTracker.style.display = 'block';
-        this.elements.progressTracker.innerHTML = `Trait Insights Remaining: ${questionsLeft}`;
-    } else if (currentStepConfig.type === 'guidingPreference') {
-        this.elements.progressTracker.style.display = 'block';
-        this.elements.progressTracker.innerHTML = `Setting Your Course...`;
+        if(this.elements.progressTracker) { this.elements.progressTracker.style.display = 'block'; this.elements.progressTracker.innerHTML = `Trait Insights Remaining: ${questionsLeft}`; }
+    } else if (currentStepConfig.type === 'guidingPreference' || currentStepConfig.type === 'userKeyTraits') {
+        if(this.elements.progressTracker) { this.elements.progressTracker.style.display = 'block'; this.elements.progressTracker.innerHTML = `Refining Your Path...`; }
     } else {
-        this.elements.progressTracker.style.display = 'none';
+        if(this.elements.progressTracker) this.elements.progressTracker.style.display = 'none';
     }
-
     switch (currentStepConfig.type) {
-      case 'welcome':
-        html += `
-          <h2>The Oracle of Archetypes Awaits...</h2>
-          <p>Embark on a journey to unveil the resonant energies within you. Answer with your heart, and let your true self emerge.</p>
-          <button class="cta-button" onclick="styleFinderApp.nextStyleFinderStep()">Begin the Unveiling!</button>
-        `;
-        break;
-      case 'role':
-        html += `
-          <h2>Choose Your Foundational Current</h2>
-          <p>Which fundamental energy calls to you more strongly at this moment in your journey?</p>
-          <div class="role-buttons">
-            <button onclick="styleFinderApp.setStyleFinderRole('submissive')">The Yielding Heart (Submissive)</button>
-            <button onclick="styleFinderApp.setStyleFinderRole('dominant')">The Guiding Hand (Dominant)</button>
-          </div>
-        `;
-        break;
+      case 'welcome': html = `<h2>The Oracle of Archetypes Awaits...</h2><p>Embark on a journey to unveil the resonant energies within you. Answer with your heart, and let your true self emerge.</p><button class="cta-button" onclick="styleFinderApp.nextStyleFinderStep()">Begin the Unveiling!</button>`; break;
+      case 'role': html = `<h2>Choose Your Foundational Current</h2><p>Which fundamental energy calls to you more strongly at this moment in your journey?</p><div class="role-buttons"><button onclick="styleFinderApp.setStyleFinderRole('submissive')">The Yielding Heart (Submissive)</button><button onclick="styleFinderApp.setStyleFinderRole('dominant')">The Guiding Hand (Dominant)</button></div>`; break;
       case 'guidingPreference':
-        html += `<h2>Select Your Guiding Path</h2>`;
-        html += `<p>Within your chosen current of <strong>${this.styleFinderRole}</strong>, which of these paths resonates most deeply with your core desires right now? This will help illuminate your unique archetype.</p>`;
-        html += `<div class="preference-options">`;
-        (this.guidingPreferences[this.styleFinderRole] || []).forEach(pref => {
-            html += `<button onclick="styleFinderApp.setGuidingPreference('${pref.id}')">${pref.text}</button>`;
-        });
-        html += `</div>`;
-        html += `<button onclick="styleFinderApp.prevStyleFinderStep()" style="background: #ccc; margin-top:15px;">Back to Role</button>`;
-        break;
+        html = `<h2>Select Your Guiding Path</h2><p>Within your chosen current of <strong>${this.styleFinderRole}</strong>, which of these paths resonates most deeply with your core desires right now? This will help illuminate your unique archetype.</p><div class="preference-options">`;
+        (this.guidingPreferences[this.styleFinderRole] || []).forEach(pref => { html += `<button onclick="styleFinderApp.setGuidingPreference('${pref.id}')">${pref.text}</button>`; });
+        html += `</div><div class="navigation-buttons" style="margin-top:15px;"><button onclick="styleFinderApp.prevStyleFinderStep()">Back to Role</button></div>`; break;
       case 'trait':
         const traitSet = (this.styleFinderRole === 'dominant' ? this.domFinderTraits : this.subFinderTraits);
         const traitObj = traitSet.find(t => t.name === currentStepConfig.trait);
         if (!traitObj) { html = "<p>Error: Trait not found.</p>"; break; }
-
         const currentValue = this.styleFinderAnswers.traits[traitObj.name] !== undefined ? this.styleFinderAnswers.traits[traitObj.name] : 5;
         const footnoteSet = (this.styleFinderRole === 'dominant' ? this.domTraitFootnotes : this.subTraitFootnotes);
-        
         const firstTraitStepIndex = steps.findIndex(s => s.type === 'trait');
         const isFirstTraitQuestion = this.styleFinderStep === firstTraitStepIndex;
-
         const descArray = this.sliderDescriptions[traitObj.name] || ["Description missing"];
         const currentDesc = descArray[currentValue - 1] || traitObj.name;
         const traitDisplayName = traitObj.name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-
-        html += `
-          <h2>The Oracle Ponders: ${traitDisplayName}<span class="info-icon" onclick="styleFinderApp.showTraitInfo('${traitObj.name}')">ℹ️</span></h2>
-          <p>${traitObj.desc}</p>
-          ${isFirstTraitQuestion ? '<p><em>Slide to express your affinity. (1 = Not At All, 10 = Absolutely Me)</em></p>' : ''}
-          <input type="range" min="1" max="10" value="${currentValue}" class="trait-slider" 
-                 oninput="styleFinderApp.setStyleFinderTrait('${traitObj.name}', this.value); 
-                          const descriptions = styleFinderApp.sliderDescriptions['${traitObj.name}'];
-                          if (descriptions && descriptions[this.value - 1]) { document.getElementById('desc-${traitObj.name}').textContent = descriptions[this.value - 1]; }
-                          styleFinderApp.updateDashboard();">
-          <div id="desc-${traitObj.name}" class="slider-description">${currentDesc}</div>
-          <p class="slider-footnote">${footnoteSet[traitObj.name]}</p>
-          <div style="margin-top: 15px;">
-            <button onclick="styleFinderApp.nextStyleFinderStep('${traitObj.name}')">Continue the Path</button>
-            <button onclick="styleFinderApp.prevStyleFinderStep()" style="background: #ccc; margin-left: 10px;">Reconsider</button>
-          </div>
-        `;
-        break;
+        html = `<h2>The Oracle Ponders: ${traitDisplayName}<span class="info-icon" onclick="styleFinderApp.showTraitInfo('${traitObj.name}')">ℹ️</span></h2><p>${traitObj.desc}</p>${isFirstTraitQuestion ? "<p><em>Slide to express your affinity. (1 = Not At All, 10 = Absolutely Me)</em></p>" : ''}<input type="range" min="1" max="10" value="${currentValue}" class="trait-slider" oninput="styleFinderApp.setStyleFinderTrait('${traitObj.name}', this.value); const descriptions = styleFinderApp.sliderDescriptions['${traitObj.name}']; if (descriptions && descriptions[this.value - 1]) { document.getElementById('desc-${traitObj.name}').textContent = descriptions[this.value - 1]; } styleFinderApp.updateDashboard();"><div id="desc-${traitObj.name}" class="slider-description">${currentDesc}</div><p class="slider-footnote">${footnoteSet[traitObj.name]}</p><div class="navigation-buttons" style="margin-top: 15px;"><button onclick="styleFinderApp.nextStyleFinderStep('${traitObj.name}')">Continue the Path</button><button onclick="styleFinderApp.prevStyleFinderStep()">Reconsider</button></div>`; break;
+      case 'userKeyTraits':
+        html = `<h2>Identify Your Core Resonances</h2><p>From the aspects you've reflected upon, select up to <strong>three</strong> that feel most central to your being or are most important to you in a dynamic. This will help the Oracle fine-tune your archetype.</p><div class="key-traits-selection">`;
+        const allAnsweredTraits = this.styleFinderRole === 'submissive' ? this.subFinderTraits : this.domFinderTraits;
+        allAnsweredTraits.forEach(trait => { const traitDisplayName = trait.name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()); const isChecked = this.styleFinderAnswers.userDefinedKeyTraits.includes(trait.name); html += `<label class="key-trait-label"><input type="checkbox" name="userKeyTrait" value="${trait.name}" ${isChecked ? 'checked' : ''} onchange="styleFinderApp.handleUserKeyTraitSelection(this)"> ${traitDisplayName}</label>`; });
+        html += `</div><p id="key-trait-feedback" style="color: #e74c75; font-size:0.9em; min-height:1.2em;">Select up to 3 core traits.</p><div class="navigation-buttons" style="margin-top: 15px;"><button onclick="styleFinderApp.nextStyleFinderStep()" class="cta-button">Confirm Core Traits</button><button onclick="styleFinderApp.prevStyleFinderStep()">Back to Traits</button></div>`; break;
       case 'roundSummary':
-        const topTraits = Object.entries(this.styleFinderAnswers.traits)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 3)
-          .map(([trait]) => trait.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()));
-        html += `
-          <h2>${currentStepConfig.round}: The Tapestry Emerges</h2>
-          <p>The threads of your choices are weaving a pattern. Here's a glimpse of your emerging self:</p>
-          <div id="summary-dashboard">${this.generateSummaryDashboard()}</div>
-          ${topTraits.length ? `<p><em>Your Most Resonant Traits So Far:</em> ${topTraits.join(', ')}</p>` : ''}
-          <button class="cta-button" onclick="styleFinderApp.nextStyleFinderStep()">Behold My Archetype!</button>
-          <button onclick="styleFinderApp.prevStyleFinderStep()" style="background: #ccc;">Revisit Last Trait</button>
-        `;
-        break;
+        const topTraits = Object.entries(this.styleFinderAnswers.traits).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([trait]) => trait.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()));
+        html = `<h2>${currentStepConfig.round}: The Tapestry Emerges</h2><p>The threads of your choices are weaving a pattern. Here's a glimpse of your emerging self:</p><div id="summary-dashboard">${this.generateSummaryDashboard()}</div>${topTraits.length ? `<p><em>Your Most Resonant Traits So Far:</em> ${topTraits.join(', ')}</p>` : ''}${this.styleFinderAnswers.userDefinedKeyTraits.length > 0 ? `<p><em>Your Chosen Core Traits:</em> ${this.styleFinderAnswers.userDefinedKeyTraits.map(t => t.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())).join(', ')}</p>` : ''}<div class="navigation-buttons" style="margin-top:15px;"><button class="cta-button" onclick="styleFinderApp.nextStyleFinderStep()">Behold My Archetype!</button><button onclick="styleFinderApp.prevStyleFinderStep()">Revisit Core Traits</button></div>`; break;
       case 'result':
         this.calculateStyleFinderResult();
-        if (Object.keys(this.styleFinderScores).length === 0) {
-            html = `<h2>An Enigma!</h2><p>It seems the Oracle needs more input to discern your archetype. Please restart and explore your answers.</p><button onclick="styleFinderApp.startOver()">Restart the Journey</button>`;
-            break;
-        }
+        if (Object.keys(this.styleFinderScores).length === 0) { html = `<h2>An Enigma!</h2><p>It seems the Oracle needs more input... Please restart.</p><button onclick="styleFinderApp.startOver()">Restart</button>`; break; }
         const sortedResults = Object.entries(this.styleFinderScores).sort((a, b) => b[1] - a[1]);
-        if (sortedResults.length === 0 || !sortedResults[0] || !sortedResults[0][0] || sortedResults[0][1] <= 0 ) {
-             html = `<h2>A Path Unclear!</h2><p>Your unique constellation of traits is still forming, or perhaps your guiding preference and trait answers created a unique balance! A fresh start on the journey might bring new clarity, or embrace the mystery!</p><button onclick="styleFinderApp.startOver()">Restart the Journey</button>`;
-             break;
-        }
+        if (sortedResults.length === 0 || !sortedResults[0] || !sortedResults[0][0] || sortedResults[0][1] <= 0 ) { html = `<h2>A Path Unclear!</h2><p>Your unique constellation... A fresh start might bring clarity!</p><button onclick="styleFinderApp.startOver()">Restart</button>`; break; }
         const topStyle = sortedResults[0][0];
         const styleData = this.styleDescriptions[topStyle];
         const matchData = this.dynamicMatches[topStyle] ? this.dynamicMatches[topStyle].primary : null;
-
-        if (!styleData || !styleData.title) {
-            html = `<h2>Data Anomaly!</h2><p>Apologies, seeker! Information for the archetype '${topStyle}' is currently veiled. The Oracle's scribes (developers) are working to illuminate it. Please try again later or explore anew.</p><button onclick="styleFinderApp.startOver()">Restart the Journey</button>`;
-            break;
-        }
-
-        html += `
-          <div class="result-section fade-in">
-            <h2>🌟 Your Archetype Revealed: ${styleData.title} ${styleData.icon || ""} 🌟</h2>
-            ${styleData.flavorText ? `<p class="flavor-text"><em>"${styleData.flavorText}"</em></p>` : ""}
-            <div class="result-subsection"><h3>Essence</h3><p>${styleData.essence}</p></div>
-            
-            ${matchData ? `
-              <div class="result-subsection dynamic-match-section">
-                <h3>Primary Dynamic Resonance: With ${matchData.partnerStyle}</h3>
-                <p><strong>Dynamic Signature:</strong> ${matchData.dynamicName || "A Potent Pairing"}</p>
-                <p>${matchData.description || "This pairing creates a special synergy."}</p>
-                ${matchData.interactionFocus && matchData.interactionFocus.length > 0 ? `
-                  <p><strong>Key Interaction Harmonics:</strong></p>
-                  <ul>${matchData.interactionFocus.map(item => `<li>${item}</li>`).join('')}</ul>
-                ` : ""}
-              </div>
-            ` : `<p><em>Dynamic match information is being woven by the Fates...</em></p>`}
-            <p><em>For a deeper understanding of your Archetype, including motivations, characteristics, and pathways to exploration, select "Explore Deeper".</em></p>
-            <div class="result-buttons">
-              <button onclick="styleFinderApp.startOver()">Restart the Journey</button>
-              <button class="cta-button" onclick="styleFinderApp.showFullDetails('${topStyle}')">Explore ${styleData.title || topStyle} Deeper</button>
-            </div>
-          </div>
-        `;
+        if (!styleData || !styleData.title) { html = `<h2>Data Anomaly!</h2><p>Information for '${topStyle}' is veiled...</p><button onclick="styleFinderApp.startOver()">Restart</button>`; break; }
+        this.quizCompletedOnce = true;
+        if (this.elements.returnToResultsBtn) { this.elements.returnToResultsBtn.style.display = 'inline-block'; }
+        this.topArchetypesForCuration = sortedResults.slice(0, 5).map(([name, score]) => ({ name: name, score: score, data: this.styleDescriptions[name] })).filter(arch => arch.data && arch.data.title);
+        html = `<div class="result-section fade-in"><h2>🌟 Your Primary Archetype: ${styleData.title} ${styleData.icon || ""} 🌟</h2>${styleData.flavorText ? `<p class="flavor-text"><em>"${styleData.flavorText}"</em></p>` : ""}<div class="result-subsection"><h3>Essence</h3><p>${styleData.essence}</p></div>${matchData ? `<div class="result-subsection dynamic-match-section"><h3>Primary Dynamic Resonance: With ${matchData.partnerStyle}</h3><p><strong>Dynamic Signature:</strong> ${matchData.dynamicName || "A Potent Pairing"}</p><p>${matchData.description || "This pairing creates a special synergy."}</p>${matchData.interactionFocus && matchData.interactionFocus.length > 0 ? `<p><strong>Key Interaction Harmonics:</strong></p><ul>${matchData.interactionFocus.map(item => `<li>${item}</li>`).join('')}</ul>` : ""}</div>` : `<p><em>Dynamic match information is being woven...</em></p>`}<p style="margin-top:20px;"><em>Your journey can deepen...</em></p><div class="result-buttons"><button onclick="styleFinderApp.showFullDetails('${topStyle}')">Explore ${styleData.title || topStyle} Deeper</button><button class="cta-button" onclick="styleFinderApp.enterCurationMode()">Curate Your Constellation</button><button class="cta-button" onclick="styleFinderApp.openPlaygroundFromQuiz()">Enter the Playground</button></div><div class="result-buttons" style="margin-top:10px;"><button onclick="styleFinderApp.startOver()">Restart the Journey</button></div></div>`;
         setTimeout(() => { if (typeof confetti === 'function') { confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } }); } }, 300);
         break;
     }
-    this.elements.stepContent.innerHTML = html;
-    if (currentStepConfig.type === 'trait') {
-      this.updateDashboard();
-    } else {
-      this.elements.dashboard.style.display = 'none';
-    }
+    if(this.elements.stepContent) this.elements.stepContent.innerHTML = html;
+    if (currentStepConfig && currentStepConfig.type === 'trait') { this.updateDashboard(); }
+    else { if(this.elements.dashboard) this.elements.dashboard.style.display = 'none'; }
   }
 
   setStyleFinderRole(role) {
@@ -1172,6 +944,7 @@ Puppy: {
     this.styleFinderAnswers.role = role;
     this.styleFinderAnswers.traits = {};
     this.styleFinderAnswers.guidingPreference = null;
+    this.styleFinderAnswers.userDefinedKeyTraits = [];
     this.previousScores = {};
     this.hasRenderedDashboard = false;
     this.nextStyleFinderStep();
@@ -1187,13 +960,37 @@ Puppy: {
     this.styleFinderAnswers.traits[trait] = parseInt(value, 10);
   }
 
-  nextStyleFinderStep(currentTrait = null) {
+  handleUserKeyTraitSelection(checkboxElement) {
+    const traitName = checkboxElement.value;
+    const feedbackEl = document.getElementById('key-trait-feedback');
+    if (checkboxElement.checked) {
+        if (this.styleFinderAnswers.userDefinedKeyTraits.length < 3) {
+            this.styleFinderAnswers.userDefinedKeyTraits.push(traitName);
+            if(feedbackEl) feedbackEl.textContent = `${3 - this.styleFinderAnswers.userDefinedKeyTraits.length} more core traits can be selected.`;
+        } else {
+            checkboxElement.checked = false;
+            if(feedbackEl) feedbackEl.textContent = "You have selected the maximum of 3 core traits.";
+        }
+    } else {
+        this.styleFinderAnswers.userDefinedKeyTraits = this.styleFinderAnswers.userDefinedKeyTraits.filter(t => t !== traitName);
+        if(feedbackEl) feedbackEl.textContent = `${3 - this.styleFinderAnswers.userDefinedKeyTraits.length} more core traits can be selected.`;
+    }
+    if (this.styleFinderAnswers.userDefinedKeyTraits.length === 0 && feedbackEl) {
+        feedbackEl.textContent = "Select up to 3 core traits.";
+    }
+  }
+
+  nextStyleFinderStep(currentInput = null) {
     const currentStepConfig = this.getCurrentStepConfig();
-    if (currentStepConfig && currentStepConfig.type === 'trait' && currentTrait && this.styleFinderAnswers.traits[currentTrait] === undefined) {
+    if (!currentStepConfig) {
+        console.error("Reached end of defined steps or invalid step.");
+        return;
+    }
+    if (currentStepConfig.type === 'trait' && currentInput && this.styleFinderAnswers.traits[currentInput] === undefined) {
       this.showFeedback("Please slide to express your affinity first!");
       return;
     }
-    if (currentStepConfig && currentStepConfig.type === 'guidingPreference' && !this.styleFinderAnswers.guidingPreference) {
+    if (currentStepConfig.type === 'guidingPreference' && !this.styleFinderAnswers.guidingPreference) {
         this.showFeedback("Please select a guiding path to continue.");
         return;
     }
@@ -1206,41 +1003,61 @@ Puppy: {
       this.styleFinderStep--;
       const newStepConfig = this.getCurrentStepConfig();
       if (newStepConfig.type === 'role') {
-          this.styleFinderAnswers.guidingPreference = null;
           this.styleFinderRole = null;
+          this.styleFinderAnswers.guidingPreference = null;
           this.styleFinderAnswers.traits = {};
+          this.styleFinderAnswers.userDefinedKeyTraits = [];
           this.previousScores = {};
           this.hasRenderedDashboard = false;
       } else if (newStepConfig.type === 'guidingPreference') {
           this.styleFinderAnswers.traits = {};
+          this.styleFinderAnswers.userDefinedKeyTraits = [];
           this.previousScores = {};
           this.hasRenderedDashboard = false;
+      } else if (newStepConfig.type === 'userKeyTraits') {
+          // No specific reset needed here when going back TO this step
+      } else if (newStepConfig.type === 'trait') {
+          const stepsArray = this.getQuizStepsArray();
+          if (this.styleFinderStep + 1 < stepsArray.length && stepsArray[this.styleFinderStep + 1].type === 'userKeyTraits') {
+              this.styleFinderAnswers.userDefinedKeyTraits = [];
+          }
       }
       this.renderStyleFinder();
     }
   }
 
   getCurrentStepConfig() {
-      const steps = [];
-      steps.push({ type: 'welcome' });
-      steps.push({ type: 'role' });
-      if (this.styleFinderRole) {
-          steps.push({ type: 'guidingPreference' });
-          const traitSet = (this.styleFinderRole === 'dominant' ? this.domFinderTraits : this.subFinderTraits);
-          traitSet.forEach(trait => steps.push({ type: 'trait', trait: trait.name }));
-      }
-      steps.push({ type: 'roundSummary', round: 'Final Glimpse' });
-      steps.push({ type: 'result' });
-      return steps[this.styleFinderStep];
+      return this.getQuizStepsArray()[this.styleFinderStep];
   }
 
   startOver() {
     this.styleFinderStep = 0;
     this.styleFinderRole = null;
-    this.styleFinderAnswers = { traits: {}, guidingPreference: null };
+    this.styleFinderAnswers = { traits: {}, guidingPreference: null, userDefinedKeyTraits: [] };
     this.styleFinderScores = {};
     this.hasRenderedDashboard = false;
     this.previousScores = null;
+    this.curationModeActive = false;
+    this.topArchetypesForCuration = [];
+    this.selectedCuratedElements = {};
+    this.customArchetypeName = "";
+    this.customArchetypeDescription = "";
+    
+    this.quizCompletedOnce = false;
+    if (this.elements.returnToResultsBtn) {
+        this.elements.returnToResultsBtn.style.display = 'none';
+    }
+    
+    if (this.playgroundApp && document.getElementById('playgroundContainer') && document.getElementById('playgroundContainer').style.display !== 'none') {
+        if (typeof this.playgroundApp.hidePlaygroundWithoutOpeningQuiz === 'function') {
+            this.playgroundApp.hidePlaygroundWithoutOpeningQuiz();
+        } else {
+            const pgContainer = document.getElementById('playgroundContainer');
+            if(pgContainer) pgContainer.style.display = 'none';
+        }
+    }
+
+    if (this.elements.styleFinder) this.elements.styleFinder.style.display = 'flex';
     this.renderStyleFinder();
     this.showFeedback("A fresh journey begins!");
   }
@@ -1271,9 +1088,13 @@ Puppy: {
   }
 
   showFeedback(message) {
-    this.elements.feedback.innerHTML = message;
-    this.elements.feedback.classList.add('feedback-animation');
-    setTimeout(() => this.elements.feedback.classList.remove('feedback-animation'), 500);
+    if (this.elements.feedback) {
+      this.elements.feedback.innerHTML = message;
+      this.elements.feedback.classList.add('feedback-animation');
+      setTimeout(() => {
+        if(this.elements.feedback) this.elements.feedback.classList.remove('feedback-animation');
+      }, 500);
+    }
   }
 
   showTraitInfo(trait) {
@@ -1348,7 +1169,302 @@ Puppy: {
     popup.innerHTML = html;
     document.body.appendChild(popup);
   }
+
+  escapeJsString(str) { if (typeof str !== 'string') return ''; return str.replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n'); }
+  unescapeJsString(str) { if (typeof str !== 'string') return ''; return str.replace(/\\'/g, "'").replace(/\\"/g, '"').replace(/\\n/g, '\n'); }
+  
+  enterCurationMode() { this.curationModeActive = true; this.selectedCuratedElements = {}; this.customArchetypeName = ""; this.customArchetypeDescription = ""; this.renderCurationScreen(); }
+  
+  exitCurationMode() {
+    this.curationModeActive = false;
+    const resultStepIndex = this.getQuizStepsArray().findIndex(s => s.type === 'result');
+    if (resultStepIndex !== -1) { this.styleFinderStep = resultStepIndex; }
+    else { this.styleFinderStep = this.getQuizStepsArray().length - 1; }
+    this.renderStyleFinder();
+  }
+
+  renderCurationScreen() {
+    if (!this.elements.stepContent || !this.elements.dashboard || !this.elements.progressTracker) {
+        console.error("Modal elements not found for curation screen.");
+        return;
+    }
+    this.elements.dashboard.style.display = 'none';
+    this.elements.progressTracker.style.display = 'none';
+    let html = `<div class="curation-header"><h2>Craft Your Unique Archetype Constellation</h2>`;
+    html += `<p>Explore your top ${this.topArchetypesForCuration.length} archetypes. Select elements that resonate most to build your personalized style. You can then name it and describe it in your own words.</p></div>`;
+    html += `<div class="curation-main-content">`;
+    html += `<div class="archetype-exploration-tabs">`;
+    html += `<div class="tab-navigation">`;
+    this.topArchetypesForCuration.forEach((arch, index) => {
+        if (!arch.data) return;
+        const safeArchName = arch.name.replace(/[^a-zA-Z0-9_-]/g, '');
+        html += `<button class="tab-button ${index === 0 ? 'active' : ''}" onclick="styleFinderApp.openCurationTab(event, '${this.escapeJsString(safeArchName)}')">${arch.data.icon || '🌟'} ${arch.name}</button>`;
+    });
+    html += `</div>`;
+    this.topArchetypesForCuration.forEach((arch, index) => {
+        if (!arch.data) return;
+        const safeArchName = arch.name.replace(/[^a-zA-Z0-9_-]/g, '');
+        html += `<div id="curation-tab-${safeArchName}" class="tab-content ${index === 0 ? 'active' : ''}">`;
+        html += `<h3>${arch.data.title} (Score: ${arch.score.toFixed(1)})</h3>`;
+        if (arch.data.flavorText) html += `<p class="flavor-text"><em>"${arch.data.flavorText}"</em></p>`;
+        html += `<p><strong>Essence:</strong> ${arch.data.essence}</p>`;
+        const selectableSections = [
+            { title: "Core Motivations", items: arch.data.coreMotivations, type: 'motivation' },
+            { title: "Key Characteristics", items: arch.data.keyCharacteristics, type: 'characteristic' },
+            { title: "Strengths in a Dynamic", items: arch.data.strengthsInDynamic, type: 'strength' }
+        ];
+        selectableSections.forEach(section => {
+            if (section.items && section.items.length > 0) {
+                html += `<h4 class="curation-section-title">${section.title}:</h4><ul class="selectable-list">`;
+                section.items.forEach(item => {
+                    const uniqueId = `${section.type}-${arch.name}-${this.escapeJsString(item.substring(0,20)).replace(/[^a-zA-Z0-9_-]/g, '')}`;
+                    const isChecked = !!this.selectedCuratedElements[uniqueId];
+                    html += `<li><label><input type="checkbox" data-type="${section.type}" data-source="${arch.name}" data-text="${this.escapeJsString(item)}" onchange="styleFinderApp.handleElementSelection(this, '${this.escapeJsString(uniqueId)}')" ${isChecked ? 'checked' : ''}> ${item}</label></li>`;
+                });
+                html += `</ul>`;
+            }
+        });
+        html += `</div>`;
+    });
+    html += `</div>`;
+    html += `<div class="curation-customization-area">`;
+    html += `<div id="selected-elements-display" class="result-subsection"><h3>Your Selected Building Blocks:</h3><ul id="selected-elements-list"></ul></div>`;
+    html += `<div class="custom-archetype-form result-subsection">`;
+    html += `<h3>Name Your Unique Archetype:</h3>`;
+    html += `<input type="text" id="customArchetypeNameInput" placeholder="e.g., The Playful Nurturing Imp" value="${this.customArchetypeName}" oninput="styleFinderApp.customArchetypeName = this.value">`;
+    html += `<h3>Craft Your Personal Description:</h3>`;
+    html += `<textarea id="customArchetypeDescriptionTextarea" rows="6" placeholder="Combine selected elements or write freely...">${this.customArchetypeDescription}</textarea>`;
+    html += `<div class="curation-buttons">`;
+    html += `<button class="cta-button" onclick="styleFinderApp.finalizeCuration()">Finalize My Archetype</button>`;
+    html += `<button onclick="styleFinderApp.updateCustomDescriptionWithSelections()">Auto-fill Description</button>`;
+    html += `</div></div>`;
+    html += `</div>`;
+    html += `</div>`;
+    html += `<div class="navigation-buttons" style="margin-top: 20px;"><button onclick="styleFinderApp.exitCurationMode()">Back to Primary Quiz Result</button></div>`;
+    this.elements.stepContent.innerHTML = html;
+    this.updateSelectedElementsDisplay();
+    if (document.getElementById('customArchetypeDescriptionTextarea')) {
+        document.getElementById('customArchetypeDescriptionTextarea').value = this.customArchetypeDescription;
+    }
+    if (this.topArchetypesForCuration.length > 0 && this.topArchetypesForCuration[0].name) {
+         const firstSafeArchName = this.topArchetypesForCuration[0].name.replace(/[^a-zA-Z0-9_-]/g, '');
+        this.openCurationTab(null, firstSafeArchName, true);
+    }
+  }
+
+  openCurationTab(evt, safeArchetypeName, isInitialCall = false) {
+    let i, tabcontent, tablinks;
+    if (!this.elements.stepContent) return;
+
+    tabcontent = this.elements.stepContent.getElementsByClassName("tab-content");
+    for (i = 0; i < tabcontent.length; i++) {
+      tabcontent[i].style.display = "none";
+      tabcontent[i].classList.remove("active");
+    }
+    tablinks = this.elements.stepContent.getElementsByClassName("tab-button");
+    for (i = 0; i < tablinks.length; i++) {
+      tablinks[i].classList.remove("active");
+    }
+    
+    const currentTabContent = document.getElementById("curation-tab-" + safeArchetypeName);
+
+    if (currentTabContent) {
+        currentTabContent.style.display = "block";
+        currentTabContent.classList.add("active");
+    }
+    
+    if (evt && evt.currentTarget) {
+      evt.currentTarget.classList.add("active");
+    } else if (isInitialCall && tablinks.length > 0) {
+        for (i = 0; i < tablinks.length; i++) {
+            const originalArchNameInButton = this.topArchetypesForCuration.find(a => a.name.replace(/[^a-zA-Z0-9_-]/g, '') === safeArchetypeName)?.name;
+            if (tablinks[i].textContent.includes(originalArchNameInButton) ) {
+                 tablinks[i].classList.add("active");
+                 break;
+            }
+        }
+    }
+  }
+
+  handleElementSelection(checkboxElement, uniqueId) {
+    const type = checkboxElement.dataset.type;
+    const source = checkboxElement.dataset.source;
+    const text = this.unescapeJsString(checkboxElement.dataset.text);
+
+    if (checkboxElement.checked) {
+        this.selectedCuratedElements[uniqueId] = { type, text, source };
+    } else {
+        delete this.selectedCuratedElements[uniqueId];
+    }
+    this.updateSelectedElementsDisplay();
+  }
+  
+  updateSelectedElementsDisplay() {
+    const listElement = document.getElementById('selected-elements-list');
+    if (!listElement) return;
+    listElement.innerHTML = '';
+    if (Object.keys(this.selectedCuratedElements).length === 0) {
+        listElement.innerHTML = "<li>No elements selected yet. Pick some from the archetypes!</li>"; return;
+    }
+    Object.values(this.selectedCuratedElements).forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = `(${item.source} - ${item.type}): ${item.text}`;
+        listElement.appendChild(li);
+    });
+  }
+
+  updateCustomDescriptionWithSelections() {
+    const textarea = document.getElementById('customArchetypeDescriptionTextarea');
+    if (!textarea) return;
+    let desc = "My unique archetype is a blend of these resonant aspects:\n\n";
+    const elementsByTypeAndSource = {};
+    Object.values(this.selectedCuratedElements).forEach(item => {
+        if (!elementsByTypeAndSource[item.source]) elementsByTypeAndSource[item.source] = {};
+        if (!elementsByTypeAndSource[item.source][item.type]) elementsByTypeAndSource[item.source][item.type] = [];
+        elementsByTypeAndSource[item.source][item.type].push(`- ${item.text}`);
+    });
+
+    for (const source in elementsByTypeAndSource) {
+        desc += `From ${source}:\n`;
+        for (const type in elementsByTypeAndSource[source]) {
+            const typeDisplay = type.charAt(0).toUpperCase() + type.slice(1) + (type.endsWith('s') || type.endsWith('es') ? '' : 's');
+            desc += `  ${typeDisplay}:\n${elementsByTypeAndSource[source][type].map(t => `    ${t}`).join("\n")}\n`;
+        }
+        desc += `\n`;
+    }
+    textarea.value = desc.trim() || "Reflecting on my chosen elements...";
+    this.customArchetypeDescription = textarea.value;
+  }
+
+  finalizeCuration() {
+    const nameInput = document.getElementById('customArchetypeNameInput');
+    const descTextarea = document.getElementById('customArchetypeDescriptionTextarea');
+    if (nameInput) this.customArchetypeName = nameInput.value.trim();
+    if (descTextarea) this.customArchetypeDescription = descTextarea.value.trim();
+
+    if (!this.customArchetypeName) { this.showFeedback("Please give your unique archetype a name!"); return; }
+    if (!this.customArchetypeDescription && Object.keys(this.selectedCuratedElements).length === 0) { this.showFeedback("Please select some elements or write a description."); return; }
+    if (!this.customArchetypeDescription && Object.keys(this.selectedCuratedElements).length > 0) { this.updateCustomDescriptionWithSelections(); }
+    this.renderCuratedResultScreen();
+  }
+
+  renderCuratedResultScreen() {
+    if (!this.elements.stepContent || !this.elements.dashboard || !this.elements.progressTracker) {
+        console.error("Modal elements not found for curated result screen.");
+        return;
+    }
+    this.elements.dashboard.style.display = 'none'; this.elements.progressTracker.style.display = 'none';
+    let html = `<div class="curated-result-display result-section fade-in">`;
+    html += `<h2>✨ Your Curated Archetype ✨</h2>`;
+    html += `<h3>${this.customArchetypeName || "My Unique Blend"}</h3>`;
+    html += `<div class="result-subsection"><p>${this.customArchetypeDescription.replace(/\n/g, '<br>') || "A unique expression of self."}</p></div>`;
+    html += `<h4>Based on elements from:</h4><ul>`;
+    const sources = new Set(Object.values(this.selectedCuratedElements).map(item => item.source));
+    sources.forEach(source => { html += `<li>${source}</li>`; });
+    if (sources.size === 0) html += `<li>Your own unique insights!</li>`;
+    html += `</ul>`;
+    html += `<div class="result-buttons" style="margin-top: 20px;">`;
+    html += `<button onclick="styleFinderApp.copyCuratedToClipboard()">Copy to Clipboard</button>`;
+    html += `<button onclick="styleFinderApp.downloadCuratedAsText()">Download as Text</button>`;
+    html += `</div>`;
+    html += `<div class="navigation-buttons" style="margin-top: 20px;">`;
+    html += `<button onclick="styleFinderApp.refineCuration()">Refine Curation</button>`;
+    html += `<button onclick="styleFinderApp.exitCurationModeAndRestart()">Start New Journey</button>`;
+    html += `</div>`;
+    html += `</div>`;
+    this.elements.stepContent.innerHTML = html;
+  }
+
+  copyCuratedToClipboard() {
+    const textToCopy = `My Curated Archetype: ${this.customArchetypeName}\n\nDescription:\n${this.customArchetypeDescription}`;
+    navigator.clipboard.writeText(textToCopy).then(() => { this.showFeedback("Curated archetype copied!"); })
+    .catch(err => { this.showFeedback("Failed to copy."); console.error('Failed to copy: ', err); });
+  }
+
+  downloadCuratedAsText() {
+    const textToDownload = `My Curated Archetype: ${this.customArchetypeName}\n\nDescription:\n${this.customArchetypeDescription}\n\nSelected Elements:\n`;
+    let elementsText = "";
+    Object.values(this.selectedCuratedElements).forEach(item => {
+        elementsText += `- (${item.source} - ${item.type}): ${item.text}\n`;
+    });
+    const fullText = textToDownload + (elementsText || "Description self-authored without direct element selection.");
+    const blob = new Blob([fullText], { type: 'text/plain;charset=utf-8' });
+    const anchor = document.createElement('a');
+    const sanitizedFilename = (this.customArchetypeName || "My_Archetype").replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '');
+    anchor.download = `${sanitizedFilename}.txt`;
+    anchor.href = URL.createObjectURL(blob);
+    anchor.style.display = 'none'; document.body.appendChild(anchor); anchor.click();
+    document.body.removeChild(anchor); URL.revokeObjectURL(anchor.href);
+    this.showFeedback("Curated archetype text file downloading!");
+  }
+
+  refineCuration() { this.renderCurationScreen(); }
+  exitCurationModeAndRestart() { this.curationModeActive = false; this.startOver(); }
+
+  openPlaygroundFromQuiz() {
+    const resultStepIndex = this.getQuizStepsArray().findIndex(s => s.type === 'result');
+    if (this.styleFinderStep === resultStepIndex) {
+        this.lastQuizStepBeforePlayground = this.styleFinderStep;
+    } else {
+        this.lastQuizStepBeforePlayground = resultStepIndex !== -1 ? resultStepIndex : this.getQuizStepsArray().length -1;
+    }
+
+    if (this.elements.styleFinder) {
+        this.elements.styleFinder.style.display = 'none';
+    }
+
+    if (typeof PlaygroundApp !== 'undefined') {
+        if (!this.playgroundApp) {
+            this.playgroundApp = new PlaygroundApp(this);
+            this.playgroundApp.initializePlayground('playgroundContainer');
+        }
+        this.playgroundApp.showPlayground();
+    } else {
+        console.error("PlaygroundApp class not found. Ensure playground.js is loaded.");
+        alert("Playground feature is not available at the moment.");
+    }
+  }
+ showQuizModalAtLastStep() {
+    if (this.elements.styleFinder) {
+        this.elements.styleFinder.style.display = 'flex';
+        const resultStepIndex = this.getQuizStepsArray().findIndex(s => s.type === 'result');
+        if (this.lastQuizStepBeforePlayground === resultStepIndex && resultStepIndex !== -1) {
+            this.styleFinderStep = this.lastQuizStepBeforePlayground;
+        } else if (this.quizCompletedOnce && resultStepIndex !== -1) {
+            this.styleFinderStep = resultStepIndex;
+        } else {
+            this.styleFinderStep = (this.quizCompletedOnce && resultStepIndex !== -1) ? resultStepIndex : (this.lastQuizStepBeforePlayground || 0) ;
+        }
+        this.curationModeActive = false;
+        this.renderStyleFinder();
+    }
+  }
 } // End of StyleFinderApp class
 
-// Instantiate the app
+// --- GLOBAL INSTANTIATION ---
 const styleFinderApp = new StyleFinderApp();
+
+// --- GLOBAL EVENT LISTENERS ---
+// This listener is for the general playground button on the main page (#open-playground-btn).
+// If you want the playground *only* accessible from the quiz results, you can remove this
+// and remove the #open-playground-btn from index.html.
+document.addEventListener('DOMContentLoaded', () => {
+    const openPlaygroundBtnMainPage = document.getElementById('open-playground-btn');
+    if (openPlaygroundBtnMainPage) {
+        openPlaygroundBtnMainPage.addEventListener('click', () => {
+            if (typeof PlaygroundApp !== 'undefined') {
+                if (!styleFinderApp.playgroundApp) { // Check if instance exists on styleFinderApp
+                    styleFinderApp.playgroundApp = new PlaygroundApp(styleFinderApp);
+                    styleFinderApp.playgroundApp.initializePlayground('playgroundContainer');
+                }
+                styleFinderApp.playgroundApp.showPlayground();
+                if (styleFinderApp.elements.styleFinder && styleFinderApp.elements.styleFinder.style.display !== 'none') {
+                   styleFinderApp.elements.styleFinder.style.display = 'none'; // Hide quiz modal if open
+                }
+            } else {
+                console.error("PlaygroundApp class not found. Ensure playground.js is loaded AFTER script.js.");
+                alert("Playground feature is not available at the moment.");
+            }
+        });
+    }
+});
