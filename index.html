@@ -3,46 +3,66 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BDSM Archetype Oracle</title> <!-- Updated Title -->
+  <title>BDSM Archetype Oracle & Playground</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- Favicon (optional - good for branding) - Example, replace with your own -->
+  <!-- Example Favicon Link (replace with your actual favicon) -->
   <!-- <link rel="icon" href="favicon.ico" type="image/x-icon"> -->
 </head>
-<body data-theme="light"> <!-- Default to light theme -->
+<body data-theme="light">
 
-  <header class="app-header"> <!-- Optional: A simple header -->
+  <header class="app-header">
     <h1>Discover Your Inner Archetype</h1>
-    <p class="subtitle">Navigate the realms of desire and uncover your unique BDSM resonance.</p>
+    <p class="subtitle">Navigate the realms of desire, uncover your unique BDSM resonance, and explore interactive scenarios in the Playground.</p>
   </header>
 
   <main class="app-main">
-    <button id="style-finder-btn">Unveil Your Archetype</button> <!-- Text updated in JS, but good to have a default -->
+    <button id="style-finder-btn" class="cta-button">Unveil Your Archetype</button>
+    
+    <!-- Button to open the Playground - accessible from the start -->
+    <button id="open-playground-btn" style="margin-top: 15px;">Enter the Archetype Playground</button>
+
+    <!-- Button to return to results - initially hidden -->
+    <button id="return-to-results-btn" style="display: none; margin-top: 15px;">View My Last Archetype Result</button>
   </main>
 
-  <button id="theme-toggle" aria-label="Toggle Dark Mode">🌙</button> <!-- Added aria-label for accessibility -->
+  <!-- Theme Toggle Button -->
+  <button id="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
 
-  <div id="style-finder" class="modal" role="dialog" aria-labelledby="modal-title" aria-modal="true"> <!-- ARIA roles for accessibility -->
+  <!-- Quiz & Curation Modal -->
+  <div id="style-finder" class="modal" role="dialog" aria-modal="true">
     <div class="modal-content">
-      <span id="close-style-finder" role="button" tabindex="0" aria-label="Close Style Finder">×</span>
-      <div id="progress-tracker" aria-live="polite"></div> <!-- aria-live for screen readers -->
-      <!-- Modal Title (can be dynamically set or a generic one) -->
-      <!-- <h2 id="modal-title" class="visually-hidden">BDSM Style Finder</h2> -->
+      <span id="close-style-finder" role="button" tabindex="0" aria-label="Close Archetype Oracle">×</span>
+      <h2 id="modal-main-title" class="visually-hidden">Archetype Discovery Process</h2>
+      <div id="progress-tracker" aria-live="polite"></div>
       <div id="step-content">
-        <!-- Content will be dynamically inserted by script.js -->
+        <!-- Content for Quiz, Curation, and final Curated Result will be dynamically inserted here by script.js -->
       </div>
-      <p id="feedback" aria-live="assertive"></p> <!-- aria-live for important feedback -->
+      <p id="feedback" aria-live="assertive"></p>
       <div id="dashboard">
-        <!-- Dashboard content will be dynamically inserted by script.js -->
+        <!-- Dashboard content (live scores during quiz) will be dynamically inserted here -->
       </div>
     </div>
   </div>
 
+  <!-- Playground Container (initially hidden) -->
+  <div id="playgroundContainer" class="playground-container-main" role="region" aria-labelledby="playground-main-title" style="display: none;">
+    <!-- Static, visually hidden title for the region, for accessibility -->
+    <h2 id="playground-main-title" class="visually-hidden">Archetype Playground</h2>
+    <!-- Actual visible header and content are managed by playground.js -->
+    <!-- Playground content (header, nav, activity area) will be dynamically injected here by playground.js -->
+  </div>
+
+
   <!-- External confetti library for result celebration -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-  <script src="script.js"></script>
+  
+  <!-- Scripts: Order is important! -->
+  <script src="script.js"></script>      <!-- Defines StyleFinderApp and creates styleFinderApp instance -->
+  <script src="playground.js"></script>  <!-- Defines PlaygroundApp class -->
 
-  <footer class="app-footer"> <!-- Optional: A simple footer -->
+  <footer class="app-footer">
     <p>© 2024 BDSM Archetype Oracle. For entertainment and self-exploration purposes only. Ages 18+.</p>
+    <p>Please use responsibly and remember that communication and consent are paramount in all interactions.</p>
   </footer>
 
 </body>
