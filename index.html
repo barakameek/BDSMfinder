@@ -3,23 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BDSM Style Finder</title>
+  <title>BDSM Archetype Oracle</title> <!-- Updated Title -->
   <link rel="stylesheet" href="styles.css">
+  <!-- Favicon (optional - good for branding) - Example, replace with your own -->
+  <!-- <link rel="icon" href="favicon.ico" type="image/x-icon"> -->
 </head>
-<body data-theme="light">
-  <button id="style-finder-btn">Find Your Style!</button>
-  <button id="theme-toggle">🌙</button>
-  <div id="style-finder" class="modal">
+<body data-theme="light"> <!-- Default to light theme -->
+
+  <header class="app-header"> <!-- Optional: A simple header -->
+    <h1>Discover Your Inner Archetype</h1>
+    <p class="subtitle">Navigate the realms of desire and uncover your unique BDSM resonance.</p>
+  </header>
+
+  <main class="app-main">
+    <button id="style-finder-btn">Unveil Your Archetype</button> <!-- Text updated in JS, but good to have a default -->
+  </main>
+
+  <button id="theme-toggle" aria-label="Toggle Dark Mode">🌙</button> <!-- Added aria-label for accessibility -->
+
+  <div id="style-finder" class="modal" role="dialog" aria-labelledby="modal-title" aria-modal="true"> <!-- ARIA roles for accessibility -->
     <div class="modal-content">
-      <span id="close-style-finder">×</span>
-      <div id="progress-tracker"></div>
-      <div id="step-content"></div>
-      <p id="feedback"></p>
-      <div id="dashboard"></div>
+      <span id="close-style-finder" role="button" tabindex="0" aria-label="Close Style Finder">×</span>
+      <div id="progress-tracker" aria-live="polite"></div> <!-- aria-live for screen readers -->
+      <!-- Modal Title (can be dynamically set or a generic one) -->
+      <!-- <h2 id="modal-title" class="visually-hidden">BDSM Style Finder</h2> -->
+      <div id="step-content">
+        <!-- Content will be dynamically inserted by script.js -->
+      </div>
+      <p id="feedback" aria-live="assertive"></p> <!-- aria-live for important feedback -->
+      <div id="dashboard">
+        <!-- Dashboard content will be dynamically inserted by script.js -->
+      </div>
     </div>
   </div>
+
   <!-- External confetti library for result celebration -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
   <script src="script.js"></script>
+
+  <footer class="app-footer"> <!-- Optional: A simple footer -->
+    <p>© 2024 BDSM Archetype Oracle. For entertainment and self-exploration purposes only. Ages 18+.</p>
+  </footer>
+
 </body>
 </html>
